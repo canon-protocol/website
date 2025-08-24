@@ -1,0 +1,5 @@
+canon-verify=placeholder-verification-token
+
+This file is used for HTTPS-based publisher verification.
+When verifying canon-protocol.org with a registry, replace this content
+with the actual verification token provided by the registry.

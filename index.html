@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canon Protocol - Transform Chaos into Canonical Knowledge</title>
+    <meta name="description" content="Canon Protocol is an open specification for transforming unstructured human input into structured, versioned, and verifiable canonical specifications.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --text-dark: #1a202c;
+            --text-light: #718096;
+            --bg-light: #f7fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 10rem 2rem 5rem;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .hero .description {
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        
+        section {
+            margin-bottom: 5rem;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            text-align: center;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .feature {
+            background: var(--bg-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .feature h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .feature p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+        
+        /* Use Cases */
+        .use-cases {
+            background: var(--bg-light);
+            padding: 4rem 0;
+            margin: 0 -2rem;
+        }
+        
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 2rem auto 0;
+            padding: 0 2rem;
+        }
+        
+        .use-case {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .use-case h4 {
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .use-case p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        /* Code Example */
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+        
+        .code-example pre {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .code-comment {
+            color: #68d391;
+        }
+        
+        /* Getting Started */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .step {
+            text-align: center;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 50%;
+            line-height: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .step h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .step p {
+            color: var(--text-light);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0;
+            margin-top: 5rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 1rem;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section a {
+            color: #cbd5e0;
+            text-decoration: none;
+            line-height: 2;
+            transition: color 0.3s;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #4a5568;
+            color: #cbd5e0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">Canon Protocol</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#use-cases">Use Cases</a></li>
+                <li><a href="#getting-started">Get Started</a></li>
+                <li><a href="https://github.com/canon-protocol/canon-protocol">GitHub</a></li>
+                <li><a href="https://registry.canon-protocol.org">Registry</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="hero">
+        <h1>Canon Protocol</h1>
+        <p class="subtitle">Transform Chaos into Canonical Knowledge</p>
+        <p class="description">
+            Canon Protocol is an open specification for transforming unstructured human input—meeting recordings, 
+            code snippets, voice notes, scattered documents—into structured, versioned, and verifiable canonical 
+            specifications that machines can understand and humans can trust.
+        </p>
+        <div class="cta-buttons">
+            <a href="#getting-started" class="btn btn-primary">Get Started</a>
+            <a href="https://github.com/canon-protocol/canon-protocol" class="btn btn-secondary">View on GitHub</a>
+        </div>
+    </section>
+    
+    <div class="container">
+        <section id="features">
+            <h2>Core Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>🔄 Universal Transformation</h3>
+                    <p>
+                        Accept any input format—audio recordings, whiteboard photos, code comments, emails—and 
+                        transform them into clean, structured specifications following defined types.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <h3>✅ Verifiable Identity</h3>
+                    <p>
+                        DNS-based publisher verification ensures you always know WHO created WHAT. 
+                        Cryptographic signatures guarantee authenticity without central authorities.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <h3>📦 Automatic Versioning</h3>
+                    <p>
+                        Semantic versioning happens automatically by analyzing changes. No manual version 
+                        bumping—the system understands breaking changes, new features, and patches.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🌐 Federated by Design</h3>
+                    <p>
+                        No central authority required. Anyone can run a registry, publish specifications, 
+                        or create new types. Trust comes from cryptographic proofs, not gatekeepers.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🤖 AI-Ready</h3>
+                    <p>
+                        Designed for AI agents to execute transformations, understanding context and intent 
+                        from messy human input. Also supports traditional template engines.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🔧 Extensible Types</h3>
+                    <p>
+                        Create custom types for your domain—from API specifications to work histories, 
+                        from architecture decisions to training materials.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="use-cases" class="use-cases">
+            <h2>Transform Any Knowledge</h2>
+            <div class="use-case-grid">
+                <div class="use-case">
+                    <h4>📝 Meeting → Requirements</h4>
+                    <p>Turn rambling meeting recordings into structured product requirements with priorities and acceptance criteria.</p>
+                </div>
+                
+                <div class="use-case">
+                    <h4>💻 Code → API Spec</h4>
+                    <p>Generate OpenAPI specifications from your existing code, comments, and examples.</p>
+                </div>
+                
+                <div class="use-case">
+                    <h4>🎨 Whiteboard → Architecture</h4>
+                    <p>Transform whiteboard sketches into formal architecture decision records.</p>
+                </div>
+                
+                <div class="use-case">
+                    <h4>🎤 Interview → Documentation</h4>
+                    <p>Convert expert interviews into structured technical documentation.</p>
+                </div>
+                
+                <div class="use-case">
+                    <h4>📧 Emails → Decisions</h4>
+                    <p>Extract decisions and action items from email threads.</p>
+                </div>
+                
+                <div class="use-case">
+                    <h4>🗣️ Stories → Work History</h4>
+                    <p>Transform career narratives into structured professional profiles.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>How It Works</h2>
+            
+            <div class="code-example">
+                <pre><span class="code-comment"># Initialize a Canon project</span>
+canon init
+
+<span class="code-comment"># Your canon.yml defines dependencies</span>
+canon: 1.0
+registry:
+  default: https://registry.canon-protocol.org
+
+dependencies:
+  - canon-protocol.org/type@1.0.0
+  - canon-protocol.org/transformation@1.0.0
+  - canon-protocol.org/auto-version@1.0.0
+
+<span class="code-comment"># Install dependencies</span>
+canon install
+
+<span class="code-comment"># Create a specification from sources</span>
+canon create my-api --type api.io/openapi@2.0.0
+
+<span class="code-comment"># Transform sources into canonical form</span>
+canon transform my-api/
+
+<span class="code-comment"># Sign and publish</span>
+canon publish my-api/</pre>
+            </div>
+        </section>
+        
+        <section id="getting-started">
+            <h2>Get Started</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Install Canon CLI</h3>
+                    <p>Install the Canon command-line tool from crates.io</p>
+                    <div class="code-example">
+                        <pre>cargo install canon-cli</pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Initialize Project</h3>
+                    <p>Set up your repository with core dependencies</p>
+                    <div class="code-example">
+                        <pre>canon init</pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Transform Knowledge</h3>
+                    <p>Create specifications from your sources</p>
+                    <div class="code-example">
+                        <pre>canon create my-spec</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Core Specifications</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">
+                The Canon Protocol ecosystem is bootstrapped with these fundamental specifications:
+            </p>
+            
+            <div class="features">
+                <div class="feature">
+                    <h3>Type</h3>
+                    <p>
+                        The meta-type that defines how to create new types. Self-referential and elegant, 
+                        it forms the foundation of the entire type system.
+                    </p>
+                    <a href="https://registry.canon-protocol.org/specs/canon-protocol.org/type/1.0.0/" 
+                       style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                       View Specification →
+                    </a>
+                </div>
+                
+                <div class="feature">
+                    <h3>Transformation</h3>
+                    <p>
+                        Defines how to create transformations that convert source artifacts into canonical 
+                        specifications. Supports AI, template, and hybrid execution.
+                    </p>
+                    <a href="https://registry.canon-protocol.org/specs/canon-protocol.org/transformation/1.0.0/" 
+                       style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                       View Specification →
+                    </a>
+                </div>
+                
+                <div class="feature">
+                    <h3>Auto-Version</h3>
+                    <p>
+                        Automatic semantic versioning transformation that analyzes changes to determine 
+                        appropriate version bumps. No more manual versioning.
+                    </p>
+                    <a href="https://registry.canon-protocol.org/specs/canon-protocol.org/auto-version/1.0.0/" 
+                       style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                       View Specification →
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Documentation</h4>
+                <ul>
+                    <li><a href="https://github.com/canon-protocol/canon-protocol/blob/main/SPECIFICATION.md">Specification</a></li>
+                    <li><a href="https://github.com/canon-protocol/canon-cli">CLI Documentation</a></li>
+                    <li><a href="https://registry.canon-protocol.org">Registry</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="https://github.com/canon-protocol">GitHub Organization</a></li>
+                    <li><a href="https://github.com/canon-protocol/canon-protocol/issues">Issues</a></li>
+                    <li><a href="https://github.com/canon-protocol/canon-protocol/discussions">Discussions</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="/.well-known/canon-keys.json">Public Keys</a></li>
+                    <li><a href="/getting-started.html">Getting Started Guide</a></li>
+                    <li><a href="/examples.html">Examples</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>© 2025 Canon Protocol. Licensed under MIT.</p>
+            <p style="margin-top: 0.5rem; font-style: italic;">Transforming chaos into canonical knowledge.</p>
+        </div>
+    </footer>
+</body>
+</html>
