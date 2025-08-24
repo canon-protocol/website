@@ -10,7 +10,7 @@ Where `{token}` is the unique verification token provided by each registry.
 
 ## Current Files
 
-- `canon-verify-placeholder` - Placeholder file. Replace "placeholder" with actual token from spec.farm when registering.
+- `canon-verify-placeholder` - Placeholder file. Replace "placeholder" with actual token from a registry when registering.
 
 ## Adding New Registries
 

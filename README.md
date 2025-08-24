@@ -106,7 +106,6 @@ npx http-server
 
 - [canon-protocol](https://github.com/canon-protocol/canon-protocol) - Main specification
 - [canon-cli](https://github.com/canon-protocol/canon-cli) - Command-line tool
-- [spec.farm](https://github.com/canon-protocol/spec.farm) - Canon Protocol Registry
 
 ## License
 
