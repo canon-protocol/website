@@ -4,231 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canon Protocol</title>
-    <meta name="description" content="Canon Protocol is a specification for structured, versioned, and verifiable data transformations.">
+    <meta name="description" content="Publisher identity for canon-protocol.org">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #fff;
-        }
-        
-        header {
-            border-bottom: 1px solid #e0e0e0;
-            padding: 1rem 0;
-        }
-        
-        nav {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.25rem;
-            font-weight: 600;
-            text-decoration: none;
+            max-width: 600px;
+            margin: 4rem auto;
+            padding: 0 1rem;
             color: #333;
         }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            color: #666;
-            text-decoration: none;
-        }
-        
-        .nav-links a:hover {
-            color: #333;
-        }
-        
-        main {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-        
         h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 1rem;
-            font-weight: 700;
         }
-        
-        .tagline {
-            font-size: 1.25rem;
-            color: #666;
-            margin-bottom: 3rem;
-        }
-        
-        section {
-            margin-bottom: 3rem;
-        }
-        
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-        
         p {
-            margin-bottom: 1rem;
-            color: #555;
-        }
-        
-        .code-block {
-            background: #f5f5f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            padding: 1rem;
             margin: 1rem 0;
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
         }
-        
-        .links {
-            display: flex;
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-        
-        .links a {
+        a {
             color: #0066cc;
             text-decoration: none;
         }
-        
-        .links a:hover {
+        a:hover {
             text-decoration: underline;
         }
-        
-        .specs-list {
+        code {
+            background: #f5f5f5;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .links {
+            margin: 2rem 0;
+            padding-left: 0;
             list-style: none;
-            margin: 1rem 0;
         }
-        
-        .specs-list li {
-            padding: 0.75rem;
-            border-left: 3px solid #e0e0e0;
-            margin-bottom: 1rem;
-            background: #f9f9f9;
+        .links li {
+            margin: 0.5rem 0;
         }
-        
-        .specs-list strong {
-            display: block;
-            margin-bottom: 0.25rem;
-            color: #333;
-        }
-        
-        .specs-list .description {
-            color: #666;
-            font-size: 0.95rem;
-        }
-        
         footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
             border-top: 1px solid #e0e0e0;
-            padding: 2rem;
-            text-align: center;
             color: #666;
             font-size: 0.9rem;
-        }
-        
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/" class="logo">Canon Protocol</a>
-            <ul class="nav-links">
-                <li><a href="/getting-started.html">Docs</a></li>
-                <li><a href="https://spec.farm">Registry</a></li>
-                <li><a href="https://github.com/canon-protocol">GitHub</a></li>
-            </ul>
-        </nav>
-    </header>
+    <h1>Canon Protocol</h1>
     
-    <main>
-        <h1>Canon Protocol</h1>
-        <p class="tagline">A specification for structured, versioned, and verifiable data transformations.</p>
-        
-        <section>
-            <h2>What is Canon Protocol?</h2>
-            <p>
-                Canon Protocol defines a standard for creating, versioning, and distributing specifications 
-                that transform unstructured data into structured formats. It uses cryptographic signatures 
-                for verification and DNS-based identity for publishers.
-            </p>
-        </section>
-        
-        <section>
-            <h2>Quick Start</h2>
-            <div class="code-block">cargo install canon-cli
-canon init
-canon install</div>
-            <p>See the <a href="/getting-started.html">documentation</a> for detailed instructions.</p>
-        </section>
-        
-        <section>
-            <h2>Core Specifications</h2>
-            <ul class="specs-list">
-                <li>
-                    <strong>canon-protocol.org/type@1.0.0</strong>
-                    <span class="description">Defines how to create new specification types</span>
-                </li>
-                <li>
-                    <strong>canon-protocol.org/transformation@1.0.0</strong>
-                    <span class="description">Defines transformations from source data to structured output</span>
-                </li>
-                <li>
-                    <strong>canon-protocol.org/auto-version@1.0.0</strong>
-                    <span class="description">Automatically determines semantic version changes</span>
-                </li>
-            </ul>
-        </section>
-        
-        <section>
-            <h2>Publisher Identity</h2>
-            <p>
-                This domain serves as the publisher identity for canon-protocol.org specifications.
-                Public keys for signature verification are available at:
-            </p>
-            <div class="code-block">https://canon-protocol.org/.well-known/canon-keys.json</div>
-        </section>
-        
-        <section>
-            <h2>Resources</h2>
-            <div class="links">
-                <a href="https://github.com/canon-protocol/canon-protocol/blob/main/SPECIFICATION.md">Specification</a>
-                <a href="https://spec.farm">Registry</a>
-                <a href="https://github.com/canon-protocol/canon-cli">CLI Source</a>
-                <a href="/examples.html">Examples</a>
-            </div>
-        </section>
-    </main>
+    <p>
+        This is the publisher identity site for <code>canon-protocol.org</code> specifications.
+    </p>
+    
+    <p>
+        Public keys for signature verification: 
+        <a href="/.well-known/canon-keys.json">canon-keys.json</a>
+    </p>
+    
+    <ul class="links">
+        <li>Registry: <a href="https://spec.farm">spec.farm</a></li>
+        <li>GitHub: <a href="https://github.com/canon-protocol">github.com/canon-protocol</a></li>
+        <li>CLI: <code>cargo install canon-cli</code></li>
+    </ul>
     
     <footer>
-        <p>Canon Protocol · MIT License · <a href="https://github.com/canon-protocol">GitHub</a></p>
+        <p>© 2025 Canon Protocol · MIT License</p>
     </footer>
 </body>
 </html>

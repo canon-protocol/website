@@ -4,10 +4,7 @@ This repository contains the source code for [canon-protocol.org](https://canon-
 
 ## Purpose
 
-This website serves two critical functions:
-
-1. **Documentation and Information** - Provides the main landing page, getting started guide, and examples for Canon Protocol
-2. **Publisher Identity** - Hosts the cryptographic public keys at `.well-known/canon-keys.json` that verify all specifications published by canon-protocol.org
+This website serves as the publisher identity for canon-protocol.org, hosting the cryptographic public keys at `.well-known/canon-keys.json` that verify all specifications published by canon-protocol.org.
 
 ## Structure
 
@@ -16,9 +13,7 @@ website/
 ├── .well-known/
 │   ├── canon-keys.json     # Public keys for signature verification
 │   └── canon-verify         # HTTPS-based publisher verification
-├── index.html               # Main landing page
-├── getting-started.html     # Getting started guide
-├── examples.html            # Example specifications
+├── index.html               # Simple landing page
 ├── CNAME                    # GitHub Pages custom domain
 └── README.md                # This file
 ```
