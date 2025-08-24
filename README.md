@@ -79,7 +79,7 @@ canon publisher init canon-protocol.org
 
 ## Verification
 
-The Canon Protocol registry verifies publisher identity through:
+The Canon Protocol registry (spec.farm) verifies publisher identity through:
 
 1. **HTTPS Verification** - Fetches `.well-known/canon-verify` from the publisher's domain
 2. **Public Key Verification** - Uses keys from `.well-known/canon-keys.json` to verify signatures
@@ -102,7 +102,7 @@ npx http-server
 
 - [canon-protocol](https://github.com/canon-protocol/canon-protocol) - Main specification
 - [canon-cli](https://github.com/canon-protocol/canon-cli) - Command-line tool
-- [registry](https://github.com/canon-protocol/registry) - Canon Protocol Registry
+- [spec.farm](https://github.com/canon-protocol/spec.farm) - Canon Protocol Registry
 
 ## License
 
