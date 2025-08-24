@@ -11,11 +11,12 @@ This website serves as the publisher identity for canon-protocol.org, hosting th
 ```
 website/
 ├── .well-known/
-│   ├── canon-keys.json     # Public keys for signature verification
-│   └── canon-verify         # HTTPS-based publisher verification
-├── index.html               # Simple landing page
-├── CNAME                    # GitHub Pages custom domain
-└── README.md                # This file
+│   ├── canon-keys.json           # Public keys for signature verification
+│   ├── canon-verify-{token}      # HTTPS-based publisher verification files
+│   └── README.md                 # Instructions for verification files
+├── index.html                    # Simple landing page
+├── CNAME                         # GitHub Pages custom domain
+└── README.md                     # This file
 ```
 
 ## Deployment
@@ -74,10 +75,18 @@ canon publisher init canon-protocol.org
 
 ## Verification
 
-The Canon Protocol registry (spec.farm) verifies publisher identity through:
+Canon Protocol registries verify publisher identity through:
 
-1. **HTTPS Verification** - Fetches `.well-known/canon-verify` from the publisher's domain
+1. **HTTPS Verification** - Fetches `.well-known/canon-verify-{token}` from the publisher's domain
 2. **Public Key Verification** - Uses keys from `.well-known/canon-keys.json` to verify signatures
+
+### Multi-Registry Support
+
+This publisher can be verified by multiple registries simultaneously:
+- Each registry provides a unique token (e.g., "abc123")
+- Create file `.well-known/canon-verify-abc123` containing `canon-verify=abc123`
+- Registries only check for their specific token file
+- No information leakage between registries
 
 ## Local Development
 
