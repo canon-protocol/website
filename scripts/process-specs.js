@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
+const { execSync } = require('child_process');
 const { generateMarkdown } = require('./spec-to-markdown');
 
 const CANON_REPO_PATH = path.join(process.cwd(), 'canon-specs');
+const CANON_REPO_URL = 'https://github.com/canon-protocol/canon.git';
 const DOCS_OUTPUT_PATH = path.join(process.cwd(), 'docs', 'specifications');
 
 // Semantic version comparison
@@ -52,6 +54,58 @@ function ensureDirectoryExists(dirPath) {
   }
 }
 
+// Clone or update the canon repository
+function ensureCanonRepository() {
+  if (!fs.existsSync(CANON_REPO_PATH)) {
+    console.log('📦 Canon repository not found locally. Cloning from GitHub...');
+    try {
+      execSync(`git clone ${CANON_REPO_URL} ${CANON_REPO_PATH}`, { stdio: 'inherit' });
+      console.log('✅ Successfully cloned Canon repository\n');
+    } catch (error) {
+      console.error('❌ Failed to clone Canon repository:', error.message);
+      console.error('   Please ensure git is installed and you have internet connectivity.');
+      process.exit(1);
+    }
+  } else {
+    console.log('📦 Canon repository found locally.');
+    // Optionally update the repository
+    try {
+      console.log('🔄 Pulling latest changes...');
+      execSync('git pull', { cwd: CANON_REPO_PATH, stdio: 'inherit' });
+      console.log('✅ Repository updated\n');
+    } catch (error) {
+      console.warn('⚠️  Could not update repository (may be offline or have local changes)\n');
+    }
+  }
+}
+
+// Get all files in a specification directory
+function getSpecificationFiles(specPath, specInfo) {
+  const files = {};
+  
+  // Read all files from local directory
+  const specDir = path.dirname(specPath);
+  if (!fs.existsSync(specDir)) {
+    console.warn(`    ⚠️  Directory not found: ${specDir}`);
+    return files;
+  }
+  
+  const items = fs.readdirSync(specDir);
+  for (const item of items) {
+    const filePath = path.join(specDir, item);
+    const stat = fs.statSync(filePath);
+    if (!stat.isDirectory()) {
+      try {
+        files[item] = fs.readFileSync(filePath, 'utf8');
+      } catch (error) {
+        console.warn(`    ⚠️  Error reading ${item}: ${error.message}`);
+      }
+    }
+  }
+  
+  return files;
+}
+
 // Walk directory tree to find all canon.yml files
 function findCanonSpecs(dir, files = []) {
   const items = fs.readdirSync(dir);
@@ -92,11 +146,20 @@ function extractSpecInfo(specPath) {
 async function processSpecs() {
   console.log('🚀 Canon Protocol Documentation Generator');
   console.log('=========================================\n');
-  console.log('🔍 Searching for Canon specifications...');
   
-  // Find all spec files
+  // Ensure we have the Canon repository cloned locally
+  ensureCanonRepository();
+  
+  console.log('🔍 Scanning for Canon specifications...');
+  
+  // Find all spec files locally
   const specFiles = findCanonSpecs(CANON_REPO_PATH);
   console.log(`📚 Found ${specFiles.length} specification file(s)\n`);
+  
+  if (specFiles.length === 0) {
+    console.warn('⚠️  No specifications found. Please check the canon-specs directory.');
+    return;
+  }
   
   // Group specs by type and track all discoveries
   const specsByType = {};
@@ -105,6 +168,7 @@ async function processSpecs() {
   
   // First pass: collect all specs and their metadata
   const allSpecs = [];
+  
   for (const specFile of specFiles) {
     const specInfo = extractSpecInfo(specFile);
     if (!specInfo) {
@@ -123,7 +187,7 @@ async function processSpecs() {
         typeHierarchy[`${specInfo.specName}@${specInfo.version}`] = spec.type;
       }
       
-      console.log(`  📄 Discovered: ${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`);
+      console.log(`  📄 Found: ${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`);
     } catch (error) {
       console.error(`  ❌ Error reading ${specFile}:`, error.message);
     }
@@ -144,6 +208,9 @@ async function processSpecs() {
     const specInfo = spec._info;
     
     try {
+      // Get all files for this specification
+      const specFiles = getSpecificationFiles(specInfo.fullPath, specInfo);
+      
       // Group by spec name
       if (!specsByType[specInfo.specName]) {
         specsByType[specInfo.specName] = [];
@@ -156,10 +223,11 @@ async function processSpecs() {
       
       const outputFile = path.join(outputDir, `${specInfo.version}.md`);
       
-      // Generate markdown with enhanced metadata
+      // Generate markdown with enhanced metadata and all source files
       const markdown = generateMarkdown(spec, specInfo, {
         allVersions: specsByType[specInfo.specName]?.map(s => s._info.version) || [specInfo.version],
-        typeHierarchy
+        typeHierarchy,
+        sourceFiles: specFiles
       });
       fs.writeFileSync(outputFile, markdown);
       

@@ -1,6 +1,6 @@
 function generateMarkdown(spec, specInfo, context = {}) {
   const { metadata, schema, includes } = spec;
-  const { allVersions = [], typeHierarchy = {} } = context;
+  const { allVersions = [], typeHierarchy = {}, sourceFiles = {} } = context;
   
   // Determine if this is the latest version
   const sortedVersions = [...allVersions].sort((a, b) => {
@@ -44,6 +44,9 @@ ${metadata?.description || ''}
   // Generate examples section
   const examplesSection = generateExamplesSection(spec);
   
+  // Generate source files section
+  const sourceFilesSection = generateSourceFilesSection(sourceFiles);
+  
   // Combine all sections
   return `${frontmatter}
 
@@ -58,6 +61,8 @@ ${metadataSection}
 ${schemaSection}
 
 ${examplesSection}
+
+${sourceFilesSection}
 `;
 }
 
@@ -323,6 +328,57 @@ function generateSchemaDescription(schema) {
   }
   
   return description;
+}
+
+function generateSourceFilesSection(sourceFiles) {
+  if (!sourceFiles || Object.keys(sourceFiles).length === 0) {
+    return '';
+  }
+  
+  let section = '## Source Files\n\n';
+  
+  // Sort files with canon.yml first, then alphabetically
+  const fileNames = Object.keys(sourceFiles).sort((a, b) => {
+    if (a === 'canon.yml') return -1;
+    if (b === 'canon.yml') return 1;
+    return a.localeCompare(b);
+  });
+  
+  section += ':::info\n';
+  section += 'These are the complete source files from the Canon Protocol registry for this specification.\n';
+  section += ':::\n\n';
+  
+  for (const fileName of fileNames) {
+    const content = sourceFiles[fileName];
+    if (!content) continue;
+    
+    // Determine the language for syntax highlighting
+    let language = 'yaml';
+    if (fileName.endsWith('.json')) language = 'json';
+    else if (fileName.endsWith('.md')) language = 'markdown';
+    else if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) language = 'yaml';
+    else if (fileName.endsWith('.js')) language = 'javascript';
+    else if (fileName.endsWith('.ts')) language = 'typescript';
+    
+    section += `### 📄 ${fileName}\n\n`;
+    
+    // For large files, add a collapsible section
+    const lines = content.split('\n').length;
+    if (lines > 50) {
+      section += '<details>\n';
+      section += `<summary>View source (${lines} lines)</summary>\n\n`;
+      section += `\`\`\`${language}\n`;
+      section += content;
+      section += '\n```\n\n';
+      section += '</details>\n\n';
+    } else {
+      section += `\`\`\`${language}\n`;
+      section += content;
+      section += '\n```\n\n';
+    }
+  }
+  
+  return section;
 }
 
 function generateExamplesSection(spec) {

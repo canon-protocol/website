@@ -24,3 +24,9 @@ build
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Canon specs - downloaded temporarily during build, never committed
+canon-specs/
+
+# Generated specification docs - created during build, never committed
+docs/specifications/
