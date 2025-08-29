@@ -220,16 +220,6 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
       section += `${prefix}${typeUri}\n`;
     }
     section += '```\n\n';
-    
-    // Add clickable links below the tree
-    if (typeChain.length > 0) {
-      section += '**Navigate to parent types:** ';
-      section += typeChain.join(' → ');
-      section += '\n\n';
-    }
-    
-    section += '### Direct Parent\n\n';
-    section += `This type derives from: ${formatTypeReference(spec.type, true)}\n\n`;
   }
   
   // Show what this type includes/composes
@@ -240,19 +230,6 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
       section += `- ${formatTypeReference(included, true)}\n`;
     }
     section += '\n';
-  }
-  
-  // Show known derived types (if any)
-  if (context.derivedTypes && context.derivedTypes[`${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`]) {
-    const derived = context.derivedTypes[`${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`];
-    if (derived.length > 0) {
-      section += '### Known Derived Types\n\n';
-      section += 'The following types derive from this specification:\n\n';
-      for (const derivedType of derived) {
-        section += `- ${formatTypeReference(derivedType, true)}\n`;
-      }
-      section += '\n';
-    }
   }
   
   return section;
@@ -505,142 +482,32 @@ function generateSourceFilesSection(sourceFiles, specInfo) {
 }
 
 function generateExamplesSection(spec) {
-  let section = '## Example Usage\n\n';
-  
   // Check if this spec derives from 'canon-protocol.org/type' (is itself a type definition)
   // Only specs that have type: canon-protocol.org/type@... are extensible types
   const isTypeDefinition = spec.type && spec.type.includes('canon-protocol.org/type@');
   
-  // Show "Using this Type" only for specs that are type definitions
-  // (but not for the meta-type itself)
-  if (isTypeDefinition && spec._info) {
-    section += '### Using this Type\n\n';
-    section += 'This specification defines a type that can be used as a base for other specifications:\n\n';
-    section += '```yaml\n';
-    section += `canon: "1.0"\n`;
-    section += `type: ${spec._info.publisher}/${spec._info.specName}@${spec._info.version}\n`;
-    section += 'metadata:\n';
-    section += '  id: my-specification\n';
-    section += '  version: 1.0.0\n';
-    section += '  publisher: example.com\n';
-    section += '  title: My Custom Specification\n';
-    section += '\n# Define your specification here\n';
-    section += '```\n\n';
+  // Only show examples section if this is a type definition (but not the meta-type itself)
+  if (!isTypeDefinition || !spec._info || spec._info.specName === 'type') {
+    return '';
   }
   
-  section += '### Complete Example\n\n';
+  let section = '## Example Usage\n\n';
   
-  // Generate a complete example based on the schema
-  const example = generateExampleFromSchema(spec.schema);
-  
+  section += 'This specification defines a type that can be used as a base for other specifications:\n\n';
   section += '```yaml\n';
-  section += `canon: "${spec.canon || '1.0'}"\n`;
-  if (spec.type) {
-    section += `type: ${spec.type}\n`;
-  }
-  
-  if (spec.includes && spec.includes.length > 0) {
-    section += 'includes:\n';
-    for (const inc of spec.includes) {
-      section += `  - ${inc}\n`;
-    }
-  }
-  
-  if (spec.metadata) {
-    section += 'metadata:\n';
-    const metaExample = generateExampleFromSchema({ 
-      type: 'object', 
-      properties: spec.metadata 
-    });
-    section += indent(require('js-yaml').dump(metaExample), 2);
-  }
-  
-  if (example && Object.keys(example).length > 0) {
-    const exampleYaml = require('js-yaml').dump(example);
-    section += exampleYaml;
-  }
-  
-  section += '```\n';
+  section += `canon: "1.0"\n`;
+  section += `type: ${spec._info.publisher}/${spec._info.specName}@${spec._info.version}\n`;
+  section += 'metadata:\n';
+  section += '  id: my-specification\n';
+  section += '  version: 1.0.0\n';
+  section += '  publisher: example.com\n';
+  section += '  title: My Custom Specification\n';
+  section += '\n# Define your specification here\n';
+  section += '```\n\n';
   
   return section;
 }
 
-function generateExampleFromSchema(schema, depth = 0) {
-  if (!schema || depth > 3) return null;
-  
-  if (schema.example !== undefined) {
-    return schema.example;
-  }
-  
-  if (schema.default !== undefined) {
-    return schema.default;
-  }
-  
-  switch (schema.type) {
-    case 'string':
-      if (schema.enum) return schema.enum[0];
-      if (schema.format === 'uri' || schema.format === 'url') return 'https://example.com';
-      if (schema.format === 'email') return 'user@example.com';
-      if (schema.format === 'date') return '2024-01-01';
-      if (schema.format === 'date-time') return '2024-01-01T00:00:00Z';
-      if (schema.pattern) {
-        if (schema.pattern.includes('\\d')) return '1.0.0';
-      }
-      return 'example-string';
-      
-    case 'number':
-    case 'integer':
-      if (schema.minimum !== undefined) return schema.minimum;
-      if (schema.maximum !== undefined) return schema.maximum;
-      return 1;
-      
-    case 'boolean':
-      return true;
-      
-    case 'array':
-      if (schema.items) {
-        const itemExample = generateExampleFromSchema(schema.items, depth + 1);
-        return itemExample !== null ? [itemExample] : [];
-      }
-      return [];
-      
-    case 'object':
-      if (schema.properties) {
-        const obj = {};
-        const required = schema.required || [];
-        
-        // Include required properties and a few optional ones
-        for (const [propName, propSchema] of Object.entries(schema.properties)) {
-          if (required.includes(propName) || depth < 2) {
-            const value = generateExampleFromSchema(propSchema, depth + 1);
-            if (value !== null) {
-              obj[propName] = value;
-            }
-          }
-        }
-        
-        return obj;
-      }
-      return {};
-      
-    default:
-      if (schema.$ref) {
-        return `# See ${schema.$ref}`;
-      }
-      if (schema.oneOf && schema.oneOf.length > 0) {
-        return generateExampleFromSchema(schema.oneOf[0], depth + 1);
-      }
-      if (schema.anyOf && schema.anyOf.length > 0) {
-        return generateExampleFromSchema(schema.anyOf[0], depth + 1);
-      }
-      return null;
-  }
-}
-
-function indent(text, spaces) {
-  const indentation = ' '.repeat(spaces);
-  return text.split('\n').map(line => line ? indentation + line : line).join('\n');
-}
 
 module.exports = {
   generateMarkdown
