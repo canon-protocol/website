@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Canon Protocol',
-  tagline: 'A Universal Specification Registry Protocol',
+  tagline: 'A minimal, extensible standard for defining and publishing typed specifications',
   favicon: 'img/canon-logo.png',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -117,10 +117,6 @@ const config: Config = {
             {
               label: 'GitHub',
               href: 'https://github.com/canon-protocol',
-            },
-            {
-              label: 'Publisher Keys',
-              href: 'https://canon-protocol.org/.well-known/canon-keys.json',
             },
           ],
         },

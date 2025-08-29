@@ -165,6 +165,7 @@ async function processSpecs() {
   const specsByType = {};
   const specIndex = [];
   const typeHierarchy = {};
+  const derivedTypes = {};
   
   // First pass: collect all specs and their metadata
   const allSpecs = [];
@@ -185,6 +186,12 @@ async function processSpecs() {
       // Track type hierarchy
       if (spec.type) {
         typeHierarchy[`${specInfo.specName}@${specInfo.version}`] = spec.type;
+        
+        // Track derived types (reverse mapping)
+        if (!derivedTypes[spec.type]) {
+          derivedTypes[spec.type] = [];
+        }
+        derivedTypes[spec.type].push(`${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`);
       }
       
       console.log(`  📄 Found: ${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`);
@@ -227,6 +234,7 @@ async function processSpecs() {
       const markdown = generateMarkdown(spec, specInfo, {
         allVersions: specsByType[specInfo.specName]?.map(s => s._info.version) || [specInfo.version],
         typeHierarchy,
+        derivedTypes,
         sourceFiles: specFiles
       });
       fs.writeFileSync(outputFile, markdown);
@@ -302,6 +310,7 @@ id: index
 title: Canon Protocol Specifications
 sidebar_label: Overview
 sidebar_position: 1
+custom_edit_url: null
 ---
 
 # Canon Protocol Specifications
@@ -447,6 +456,7 @@ function generateVersionRedirects(specsByType) {
 id: latest
 title: ${specs[0].metadata?.title || specName} (Latest)
 sidebar_label: Latest
+custom_edit_url: null
 ---
 
 import { Redirect } from '@docusaurus/router';

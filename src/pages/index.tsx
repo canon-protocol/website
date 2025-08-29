@@ -38,8 +38,8 @@ export default function Home(): ReactNode {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`${siteConfig.title} - Universal Specification Registry`}
-      description="Canon Protocol provides a decentralized, interoperable system for managing and distributing specifications">
+      title={`${siteConfig.title}`}
+      description="A minimal, extensible standard for defining and publishing typed specifications">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

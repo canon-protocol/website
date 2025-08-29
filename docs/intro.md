@@ -41,13 +41,22 @@ Publishers are entities that create and sign specifications. Each publisher:
 
 ## Quick Start
 
+### Prerequisites
+
+The Canon CLI is written in Rust and distributed via Cargo. To install it, you'll need:
+
+- **Rust** (1.70 or later) - [Install Rust](https://rustup.rs/)
+- **Cargo** (comes with Rust)
+
 ### Installation
 
-Install the Canon CLI tool:
+Once you have Rust installed, you can install the Canon CLI:
 
 ```bash
 cargo install canon-cli
 ```
+
+This will download, compile, and install the `canon` command to your system.
 
 ### Basic Usage
 

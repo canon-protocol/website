@@ -14,6 +14,8 @@ function generateMarkdown(spec, specInfo, context = {}) {
 id: ${specInfo.version}
 title: ${metadata?.title || specInfo.specName} v${specInfo.version}
 sidebar_label: v${specInfo.version}${isLatest ? ' (latest)' : ''}
+hide_table_of_contents: false
+custom_edit_url: null
 ---`;
 
   // Generate header with enhanced type information
@@ -33,7 +35,7 @@ ${metadata?.description || ''}
   const versionNav = generateVersionNavigation(specInfo, allVersions);
   
   // Generate type hierarchy section
-  const typeHierarchySection = generateTypeHierarchySection(spec, specInfo);
+  const typeHierarchySection = generateTypeHierarchySection(spec, specInfo, context);
   
   // Generate metadata section
   const metadataSection = generateMetadataSection(metadata);
@@ -45,7 +47,7 @@ ${metadata?.description || ''}
   const examplesSection = generateExamplesSection(spec);
   
   // Generate source files section
-  const sourceFilesSection = generateSourceFilesSection(sourceFiles);
+  const sourceFilesSection = generateSourceFilesSection(sourceFiles, specInfo);
   
   // Combine all sections
   return `${frontmatter}
@@ -129,7 +131,7 @@ function generateVersionNavigation(specInfo, allVersions) {
   return nav;
 }
 
-function generateTypeHierarchySection(spec, specInfo) {
+function generateTypeHierarchySection(spec, specInfo, context = {}) {
   let section = '## Type Information\n\n';
   
   // Special case for the meta-type
@@ -139,7 +141,48 @@ function generateTypeHierarchySection(spec, specInfo) {
     section += 'It defines the structure and validation rules for creating new types.\n';
     section += ':::\n\n';
   } else if (spec.type) {
-    section += '### Derives From\n\n';
+    section += '### Type Hierarchy\n\n';
+    
+    // Build the hierarchy chain
+    const hierarchy = [];
+    let currentType = spec.type;
+    
+    // Add current spec to hierarchy
+    hierarchy.push(`**${specInfo.specName}@${specInfo.version}** (this specification)`);
+    
+    // Parse the type chain (limited depth to prevent infinite loops)
+    let depth = 0;
+    while (currentType && depth < 5) {
+      hierarchy.push(`└─ ${formatTypeReference(currentType)}`);
+      
+      // Try to find the parent type in our context
+      const typeMatch = currentType.match(/([^/]+)\/([^@]+)@(.+)/);
+      if (typeMatch && context.typeHierarchy) {
+        const [, , typeName, ] = typeMatch;
+        // Look for the parent type's parent
+        const parentKey = Object.keys(context.typeHierarchy).find(key => key.startsWith(`${typeName}@`));
+        if (parentKey) {
+          currentType = context.typeHierarchy[parentKey];
+          if (currentType) {
+            hierarchy[hierarchy.length - 1] = hierarchy[hierarchy.length - 1].replace('└─', '├─');
+          }
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+      depth++;
+    }
+    
+    // Display the hierarchy
+    section += '```\n';
+    for (const level of hierarchy) {
+      section += level + '\n';
+    }
+    section += '```\n\n';
+    
+    section += '### Direct Parent\n\n';
     section += `This type derives from: ${formatTypeReference(spec.type)}\n\n`;
   }
   
@@ -151,6 +194,19 @@ function generateTypeHierarchySection(spec, specInfo) {
       section += `- ${formatTypeReference(included)}\n`;
     }
     section += '\n';
+  }
+  
+  // Show known derived types (if any)
+  if (context.derivedTypes && context.derivedTypes[`${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`]) {
+    const derived = context.derivedTypes[`${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`];
+    if (derived.length > 0) {
+      section += '### Known Derived Types\n\n';
+      section += 'The following types derive from this specification:\n\n';
+      for (const derivedType of derived) {
+        section += `- ${formatTypeReference(derivedType)}\n`;
+      }
+      section += '\n';
+    }
   }
   
   return section;
@@ -330,7 +386,7 @@ function generateSchemaDescription(schema) {
   return description;
 }
 
-function generateSourceFilesSection(sourceFiles) {
+function generateSourceFilesSection(sourceFiles, specInfo) {
   if (!sourceFiles || Object.keys(sourceFiles).length === 0) {
     return '';
   }
@@ -344,8 +400,12 @@ function generateSourceFilesSection(sourceFiles) {
     return a.localeCompare(b);
   });
   
+  // Build the base URL for source files
+  const sourceBaseUrl = `https://github.com/canon-protocol/canon/tree/main/${specInfo.publisher}/${specInfo.specName}/${specInfo.version}`;
+  const rawBaseUrl = `https://raw.githubusercontent.com/canon-protocol/canon/main/${specInfo.publisher}/${specInfo.specName}/${specInfo.version}`;
+  
   section += ':::info\n';
-  section += 'These are the complete source files from the Canon Protocol registry for this specification.\n';
+  section += 'These are the source files from the Canon Protocol registry for this specification.\n';
   section += ':::\n\n';
   
   for (const fileName of fileNames) {
@@ -360,31 +420,35 @@ function generateSourceFilesSection(sourceFiles) {
     else if (fileName.endsWith('.js')) language = 'javascript';
     else if (fileName.endsWith('.ts')) language = 'typescript';
     
-    section += `### 📄 ${fileName}\n\n`;
-    
     // Ensure content is properly formatted
     content = content.trim();
-    
-    // For large files, add a collapsible section
     const lines = content.split('\n').length;
     
-    // Check if content contains triple backticks that could break our code fence
-    const hasTripleBackticks = content.includes('```');
-    // Use 4 backticks if content has triple backticks, otherwise use 3
-    const fence = hasTripleBackticks ? '````' : '```';
+    // Add file header with links
+    section += `### ${fileName}\n\n`;
+    section += `[View on GitHub](${sourceBaseUrl}/${fileName}) | `;
+    section += `[View Raw](${rawBaseUrl}/${fileName})\n\n`;
     
-    if (lines > 50) {
-      // Use Docusaurus-compatible collapsible syntax
-      // The key is having a blank line after <summary> and before </details>
-      section += '<details>\n';
-      section += `<summary>View source (${lines} lines)</summary>\n`;
-      section += '\n';  // Critical blank line for MDX parser
+    // For very large files (>200 lines), just show a link
+    if (lines > 200) {
+      section += `:::note\n`;
+      section += `This file contains ${lines} lines. View the full content using the links above.\n`;
+      section += `:::\n\n`;
+      
+      // Show first 50 lines as preview
+      const preview = content.split('\n').slice(0, 50).join('\n');
+      const fence = preview.includes('```') ? '````' : '```';
+      
+      section += `**Preview (first 50 lines):**\n\n`;
       section += `${fence}${language}\n`;
-      section += content;
-      section += `\n${fence}\n`;
-      section += '\n';  // Critical blank line for MDX parser
-      section += '</details>\n\n';
+      section += preview;
+      section += `\n...\n`;
+      section += `${fence}\n\n`;
     } else {
+      // For smaller files, show the full content
+      const hasTripleBackticks = content.includes('```');
+      const fence = hasTripleBackticks ? '````' : '```';
+      
       section += `${fence}${language}\n`;
       section += content;
       section += `\n${fence}\n\n`;

@@ -12,7 +12,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: 'Universal Type System',
-    icon: '🔧',
+    icon: '',
     description: (
       <>
         Define and share specifications using a powerful meta-type system. 
@@ -23,7 +23,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Decentralized by Design',
-    icon: '🌐',
+    icon: '',
     description: (
       <>
         No central authority or single point of failure. Publishers maintain 
@@ -34,7 +34,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Cryptographic Trust',
-    icon: '🔐',
+    icon: '',
     description: (
       <>
         Every specification is signed and verified using Ed25519 signatures. 
@@ -45,7 +45,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Semantic Versioning',
-    icon: '📦',
+    icon: '',
     description: (
       <>
         Full semantic versioning with compatibility tracking. Use flexible 
@@ -56,7 +56,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Registry Federation',
-    icon: '🔄',
+    icon: '',
     description: (
       <>
         Multiple registries can federate and share specifications. Build 
@@ -67,7 +67,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Language Agnostic',
-    icon: '💻',
+    icon: '',
     description: (
       <>
         Works with any programming language or specification format. Canon 
@@ -81,9 +81,6 @@ const FeatureList: FeatureItem[] = [
 function Feature({title, icon, description}: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <div className={styles.featureIcon}>{icon}</div>
-      </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>
         <p>{description}</p>
