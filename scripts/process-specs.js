@@ -230,7 +230,7 @@ function generateIndexPage(specs, specsByType) {
   });
   
   let markdown = `---
-id: specifications
+id: index
 title: Canon Protocol Specifications
 sidebar_label: Overview
 sidebar_position: 1
