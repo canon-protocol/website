@@ -1,0 +1,55 @@
+name: Update Canon Specifications
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Commit message for the update'
+        required: false
+        default: 'Update Canon Protocol specifications'
+
+jobs:
+  update-specs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout website repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Checkout canon repository
+        uses: actions/checkout@v4
+        with:
+          repository: canon-protocol/canon
+          path: canon-specs
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Process Canon specifications
+        run: node scripts/process-specs.js
+        
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Commit and push changes
+        if: steps.check-changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/specifications
+          git commit -m "${{ github.event.inputs.message || 'Update Canon Protocol specifications' }}"
+          git push
