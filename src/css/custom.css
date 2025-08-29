@@ -3,24 +3,24 @@
  */
 
 :root {
-  /* Canon Protocol Brand Colors */
-  --canon-primary: #5B21B6;        /* Deep purple */
-  --canon-primary-light: #7C3AED;  /* Lighter purple */
-  --canon-primary-dark: #4C1D95;   /* Darker purple */
-  --canon-accent: #EC4899;         /* Magenta accent */
-  --canon-success: #10B981;
-  --canon-warning: #F59E0B;
-  --canon-danger: #EF4444;
-  --canon-info: #3B82F6;
+  /* Canon Protocol Brand Colors - Professional Indigo & Amber */
+  --canon-primary: #4F46E5;        /* Indigo-600 */
+  --canon-primary-light: #6366F1;  /* Indigo-500 */
+  --canon-primary-dark: #3730A3;   /* Indigo-800 */
+  --canon-accent: #F59E0B;         /* Amber-500 - warm professional accent */
+  --canon-success: #10B981;        /* Emerald */
+  --canon-warning: #F59E0B;        /* Amber */
+  --canon-danger: #EF4444;         /* Red */
+  --canon-info: #3B82F6;           /* Blue */
   
   /* Override Infima variables with Canon colors */
   --ifm-color-primary: var(--canon-primary);
   --ifm-color-primary-dark: var(--canon-primary-dark);
-  --ifm-color-primary-darker: #3B1574;
-  --ifm-color-primary-darkest: #2E1065;
+  --ifm-color-primary-darker: #312E81;
+  --ifm-color-primary-darkest: #1E1B4B;
   --ifm-color-primary-light: var(--canon-primary-light);
-  --ifm-color-primary-lighter: #8B5CF6;
-  --ifm-color-primary-lightest: #A78BFA;
+  --ifm-color-primary-lighter: #818CF8;
+  --ifm-color-primary-lightest: #A5B4FC;
   
   /* Typography */
   --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
@@ -61,10 +61,10 @@
   --ifm-color-emphasis-800: #1F2937;
   --ifm-color-emphasis-900: #111827;
   
-  --docusaurus-highlighted-code-line-bg: rgba(91, 33, 182, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(79, 70, 229, 0.1);
   
   /* Custom properties */
-  --canon-gradient: linear-gradient(135deg, var(--canon-primary) 0%, var(--canon-accent) 100%);
+  --canon-gradient: linear-gradient(135deg, var(--canon-primary) 0%, var(--canon-primary-light) 100%);
   --canon-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --canon-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --canon-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -73,18 +73,18 @@
 
 /* Dark mode colors */
 [data-theme='dark'] {
-  --canon-primary: #8B5CF6;
-  --canon-primary-light: #A78BFA;
-  --canon-primary-dark: #7C3AED;
-  --canon-accent: #F472B6;
+  --canon-primary: #818CF8;        /* Indigo-400 for dark mode */
+  --canon-primary-light: #A5B4FC;  /* Indigo-300 */
+  --canon-primary-dark: #6366F1;   /* Indigo-500 */
+  --canon-accent: #FCD34D;         /* Amber-300 for dark mode */
   
   --ifm-color-primary: var(--canon-primary);
   --ifm-color-primary-dark: var(--canon-primary-dark);
-  --ifm-color-primary-darker: #6D28D9;
-  --ifm-color-primary-darkest: #5B21B6;
+  --ifm-color-primary-darker: #4F46E5;
+  --ifm-color-primary-darkest: #3730A3;
   --ifm-color-primary-light: var(--canon-primary-light);
-  --ifm-color-primary-lighter: #C4B5FD;
-  --ifm-color-primary-lightest: #DDD6FE;
+  --ifm-color-primary-lighter: #C7D2FE;
+  --ifm-color-primary-lightest: #E0E7FF;
   
   --ifm-background-color: #0F0F11;
   --ifm-background-surface-color: #18181B;
@@ -101,7 +101,7 @@
   --ifm-color-emphasis-800: #E4E4E7;
   --ifm-color-emphasis-900: #F4F4F5;
   
-  --docusaurus-highlighted-code-line-bg: rgba(139, 92, 246, 0.15);
+  --docusaurus-highlighted-code-line-bg: rgba(129, 140, 248, 0.15);
 }
 
 /* Import Inter font */
@@ -279,8 +279,8 @@ table td {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.3) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(245, 158, 11, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.3) 0%, transparent 50%);
   pointer-events: none;
 }
 

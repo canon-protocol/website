@@ -328,17 +328,24 @@ function generateSchemaDescription(schema) {
 function generateExamplesSection(spec) {
   let section = '## Example Usage\n\n';
   
-  // Show how to reference this type in another spec
-  if (spec._info && spec._info.specName !== 'type') {
+  // Check if this spec derives from 'canon-protocol.org/type' (is itself a type definition)
+  // Only specs that have type: canon-protocol.org/type@... are extensible types
+  const isTypeDefinition = spec.type && spec.type.includes('canon-protocol.org/type@');
+  
+  // Show "Using this Type" only for specs that are type definitions
+  // (but not for the meta-type itself)
+  if (isTypeDefinition && spec._info) {
     section += '### Using this Type\n\n';
-    section += 'To use this specification in your Canon project:\n\n';
+    section += 'This specification defines a type that can be used as a base for other specifications:\n\n';
     section += '```yaml\n';
     section += `canon: "1.0"\n`;
     section += `type: ${spec._info.publisher}/${spec._info.specName}@${spec._info.version}\n`;
     section += 'metadata:\n';
-    section += '  id: my-implementation\n';
+    section += '  id: my-specification\n';
     section += '  version: 1.0.0\n';
     section += '  publisher: example.com\n';
+    section += '  title: My Custom Specification\n';
+    section += '\n# Define your specification here\n';
     section += '```\n\n';
   }
   
