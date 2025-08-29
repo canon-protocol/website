@@ -349,7 +349,7 @@ function generateSourceFilesSection(sourceFiles) {
   section += ':::\n\n';
   
   for (const fileName of fileNames) {
-    const content = sourceFiles[fileName];
+    let content = sourceFiles[fileName];
     if (!content) continue;
     
     // Determine the language for syntax highlighting
@@ -362,27 +362,26 @@ function generateSourceFilesSection(sourceFiles) {
     
     section += `### 📄 ${fileName}\n\n`;
     
+    // Ensure content is properly formatted
+    content = content.trim();
+    
     // For large files, add a collapsible section
     const lines = content.split('\n').length;
     if (lines > 50) {
+      // Use Docusaurus-compatible collapsible syntax
+      // The key is having a blank line after <summary> and before </details>
       section += '<details>\n';
-      section += `<summary>View source (${lines} lines)</summary>\n\n`;
+      section += `<summary>View source (${lines} lines)</summary>\n`;
+      section += '\n';  // Critical blank line for MDX parser
       section += `\`\`\`${language}\n`;
       section += content;
-      // Ensure content ends with a newline before closing backticks
-      if (!content.endsWith('\n')) {
-        section += '\n';
-      }
-      section += '```\n\n';
+      section += '\n```\n';
+      section += '\n';  // Critical blank line for MDX parser
       section += '</details>\n\n';
     } else {
       section += `\`\`\`${language}\n`;
       section += content;
-      // Ensure content ends with a newline before closing backticks
-      if (!content.endsWith('\n')) {
-        section += '\n';
-      }
-      section += '```\n\n';
+      section += '\n```\n\n';
     }
   }
   
