@@ -367,21 +367,27 @@ function generateSourceFilesSection(sourceFiles) {
     
     // For large files, add a collapsible section
     const lines = content.split('\n').length;
+    
+    // Check if content contains triple backticks that could break our code fence
+    const hasTripleBackticks = content.includes('```');
+    // Use 4 backticks if content has triple backticks, otherwise use 3
+    const fence = hasTripleBackticks ? '````' : '```';
+    
     if (lines > 50) {
       // Use Docusaurus-compatible collapsible syntax
       // The key is having a blank line after <summary> and before </details>
       section += '<details>\n';
       section += `<summary>View source (${lines} lines)</summary>\n`;
       section += '\n';  // Critical blank line for MDX parser
-      section += `\`\`\`${language}\n`;
+      section += `${fence}${language}\n`;
       section += content;
-      section += '\n```\n';
+      section += `\n${fence}\n`;
       section += '\n';  // Critical blank line for MDX parser
       section += '</details>\n\n';
     } else {
-      section += `\`\`\`${language}\n`;
+      section += `${fence}${language}\n`;
       section += content;
-      section += '\n```\n\n';
+      section += `\n${fence}\n\n`;
     }
   }
   
