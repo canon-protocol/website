@@ -369,12 +369,20 @@ function generateSourceFilesSection(sourceFiles) {
       section += `<summary>View source (${lines} lines)</summary>\n\n`;
       section += `\`\`\`${language}\n`;
       section += content;
-      section += '\n```\n\n';
+      // Ensure content ends with a newline before closing backticks
+      if (!content.endsWith('\n')) {
+        section += '\n';
+      }
+      section += '```\n\n';
       section += '</details>\n\n';
     } else {
       section += `\`\`\`${language}\n`;
       section += content;
-      section += '\n```\n\n';
+      // Ensure content ends with a newline before closing backticks
+      if (!content.endsWith('\n')) {
+        section += '\n';
+      }
+      section += '```\n\n';
     }
   }
   
