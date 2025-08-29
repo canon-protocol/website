@@ -8,6 +8,10 @@ sidebar_position: 1
 
 Welcome to the Canon Protocol documentation. Canon is a universal specification registry protocol that enables decentralized, interoperable management and distribution of specifications.
 
+## Why "Canon"?
+
+The name "Canon" comes from **canonicalization** — the process of converting data into a standard, canonical form. Just as canonicalization ensures consistent representation of information, Canon Protocol establishes a universal standard for defining, publishing, and sharing specifications. This creates a single source of truth for data structures, APIs, and protocols across different systems and organizations.
+
 ## What is Canon Protocol?
 
 Canon Protocol provides a standardized way to:

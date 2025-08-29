@@ -462,6 +462,29 @@ table td {
   background: var(--ifm-color-emphasis-200);
 }
 
+/* Type hierarchy links - subtle until hover */
+.markdown a code {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.markdown a:hover code {
+  color: var(--canon-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--canon-primary);
+  text-underline-offset: 2px;
+}
+
+/* Type hierarchy tree structure */
+.markdown p:has(> strong) + p:has(> a > code),
+.markdown p:has(> a > code) {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  margin: 0.25rem 0;
+}
+
 /* Responsive improvements */
 @media (max-width: 996px) {
   .navbar__title {

@@ -25,8 +25,8 @@ custom_edit_url: null
 ${generateVersionBadge(specInfo.version, isLatest)}
 
 **Publisher:** ${specInfo.publisher}  
-**Type:** ${formatTypeReference(spec.type)}  
-${includes ? `**Composes:** ${formatIncludes(includes)}  ` : ''}
+**Type:** ${formatTypeReference(spec.type, true)}  
+${includes ? `**Composes:** ${formatIncludes(includes, true)}  ` : ''}
 
 ${metadata?.description || ''}
 `;
@@ -90,22 +90,38 @@ function generateVersionBadge(version, isLatest) {
   return badges.join(' ');
 }
 
-function formatTypeReference(type) {
+function formatTypeReference(type, asLink = false) {
   if (!type) return 'N/A';
   
-  // Check if it's a special type
-  if (type === 'canon-protocol.org/type@0.1.0') {
-    return '`canon-protocol.org/type@0.1.0` (meta-type)';
+  // Parse the type URI
+  const typeMatch = type.match(/([^/]+)\/([^@]+)@(.+)/);
+  if (!typeMatch) {
+    return `\`${type}\``;
   }
   
-  // Format as inline code
+  const [, publisher, typeName, version] = typeMatch;
+  const isMetaType = type.includes('canon-protocol.org/type@');
+  
+  if (asLink) {
+    // Create a relative link to the specification
+    // We need to go up to the specifications root and then down to the specific spec
+    const link = `/docs/specifications/${typeName}/${version}`;
+    const label = isMetaType ? `${type} (meta-type)` : type;
+    return `[\`${label}\`](${link})`;
+  }
+  
+  // Non-link format
+  if (isMetaType) {
+    return `\`${type}\` (meta-type)`;
+  }
+  
   return `\`${type}\``;
 }
 
-function formatIncludes(includes) {
+function formatIncludes(includes, asLink = false) {
   if (!includes || includes.length === 0) return '';
   
-  const formatted = includes.map(inc => `\`${inc}\``).join(', ');
+  const formatted = includes.map(inc => formatTypeReference(inc, asLink)).join(', ');
   return formatted;
 }
 
@@ -152,8 +168,24 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
     
     // Parse the type chain (limited depth to prevent infinite loops)
     let depth = 0;
+    const visitedTypes = new Set();
+    
     while (currentType && depth < 5) {
-      hierarchy.push(`└─ ${formatTypeReference(currentType)}`);
+      // Check if this is the meta-type referencing itself
+      if (currentType.includes('canon-protocol.org/type@')) {
+        hierarchy.push(`└─ ${formatTypeReference(currentType, true)}`);
+        // Stop here - the meta-type is the root of the hierarchy
+        break;
+      }
+      
+      // Check for cycles
+      if (visitedTypes.has(currentType)) {
+        hierarchy.push(`└─ ${formatTypeReference(currentType)} (circular reference)`);
+        break;
+      }
+      visitedTypes.add(currentType);
+      
+      hierarchy.push(`└─ ${formatTypeReference(currentType, true)}`);
       
       // Try to find the parent type in our context
       const typeMatch = currentType.match(/([^/]+)\/([^@]+)@(.+)/);
@@ -162,9 +194,12 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
         // Look for the parent type's parent
         const parentKey = Object.keys(context.typeHierarchy).find(key => key.startsWith(`${typeName}@`));
         if (parentKey) {
-          currentType = context.typeHierarchy[parentKey];
-          if (currentType) {
+          const parentType = context.typeHierarchy[parentKey];
+          if (parentType && parentType !== currentType) {
+            currentType = parentType;
             hierarchy[hierarchy.length - 1] = hierarchy[hierarchy.length - 1].replace('└─', '├─');
+          } else {
+            break;
           }
         } else {
           break;
@@ -175,15 +210,11 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
       depth++;
     }
     
-    // Display the hierarchy
-    section += '```\n';
-    for (const level of hierarchy) {
-      section += level + '\n';
-    }
-    section += '```\n\n';
+    // Display the hierarchy (not in a code block since we have links)
+    section += hierarchy.join('\n') + '\n\n';
     
     section += '### Direct Parent\n\n';
-    section += `This type derives from: ${formatTypeReference(spec.type)}\n\n`;
+    section += `This type derives from: ${formatTypeReference(spec.type, true)}\n\n`;
   }
   
   // Show what this type includes/composes
@@ -191,7 +222,7 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
     section += '### Composes\n\n';
     section += 'This type composes the following types:\n\n';
     for (const included of spec.includes) {
-      section += `- ${formatTypeReference(included)}\n`;
+      section += `- ${formatTypeReference(included, true)}\n`;
     }
     section += '\n';
   }
@@ -203,7 +234,7 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
       section += '### Known Derived Types\n\n';
       section += 'The following types derive from this specification:\n\n';
       for (const derivedType of derived) {
-        section += `- ${formatTypeReference(derivedType)}\n`;
+        section += `- ${formatTypeReference(derivedType, true)}\n`;
       }
       section += '\n';
     }
