@@ -457,6 +457,8 @@ id: latest
 title: ${specs[0].metadata?.title || specName} (Latest)
 sidebar_label: Latest
 custom_edit_url: null
+pagination_next: null
+pagination_prev: null
 ---
 
 import { Redirect } from '@docusaurus/router';
