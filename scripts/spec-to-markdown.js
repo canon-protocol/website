@@ -163,29 +163,27 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
     const hierarchy = [];
     let currentType = spec.type;
     
-    // Add current spec to hierarchy
-    hierarchy.push(`**${specInfo.specName}@${specInfo.version}** (this specification)`);
-    
     // Parse the type chain (limited depth to prevent infinite loops)
     let depth = 0;
     const visitedTypes = new Set();
+    const typeChain = [];
     
     while (currentType && depth < 5) {
       // Check if this is the meta-type referencing itself
       if (currentType.includes('canon-protocol.org/type@')) {
-        hierarchy.push(`└─ ${formatTypeReference(currentType, true)}`);
+        typeChain.push(formatTypeReference(currentType, true));
         // Stop here - the meta-type is the root of the hierarchy
         break;
       }
       
       // Check for cycles
       if (visitedTypes.has(currentType)) {
-        hierarchy.push(`└─ ${formatTypeReference(currentType)} (circular reference)`);
+        typeChain.push(`${formatTypeReference(currentType)} (circular reference)`);
         break;
       }
       visitedTypes.add(currentType);
       
-      hierarchy.push(`└─ ${formatTypeReference(currentType, true)}`);
+      typeChain.push(formatTypeReference(currentType, true));
       
       // Try to find the parent type in our context
       const typeMatch = currentType.match(/([^/]+)\/([^@]+)@(.+)/);
@@ -197,7 +195,6 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
           const parentType = context.typeHierarchy[parentKey];
           if (parentType && parentType !== currentType) {
             currentType = parentType;
-            hierarchy[hierarchy.length - 1] = hierarchy[hierarchy.length - 1].replace('└─', '├─');
           } else {
             break;
           }
@@ -210,8 +207,26 @@ function generateTypeHierarchySection(spec, specInfo, context = {}) {
       depth++;
     }
     
-    // Display the hierarchy (not in a code block since we have links)
-    section += hierarchy.join('\n') + '\n\n';
+    // Display the hierarchy using a code block for proper formatting
+    section += '```\n';
+    section += `${specInfo.specName}@${specInfo.version} (this specification)\n`;
+    
+    // Add the parent types with tree characters
+    for (let i = 0; i < typeChain.length; i++) {
+      const isLast = i === typeChain.length - 1;
+      const prefix = isLast ? '└─ ' : '├─ ';
+      // Extract just the type URI without markdown
+      const typeUri = typeChain[i].match(/`([^`]+)`/)?.[1] || typeChain[i];
+      section += `${prefix}${typeUri}\n`;
+    }
+    section += '```\n\n';
+    
+    // Add clickable links below the tree
+    if (typeChain.length > 0) {
+      section += '**Navigate to parent types:** ';
+      section += typeChain.join(' → ');
+      section += '\n\n';
+    }
     
     section += '### Direct Parent\n\n';
     section += `This type derives from: ${formatTypeReference(spec.type, true)}\n\n`;
