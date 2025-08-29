@@ -1,24 +1,40 @@
-function generateMarkdown(spec, specInfo) {
-  const { metadata, schema } = spec;
+function generateMarkdown(spec, specInfo, context = {}) {
+  const { metadata, schema, includes } = spec;
+  const { allVersions = [], typeHierarchy = {} } = context;
+  
+  // Determine if this is the latest version
+  const sortedVersions = [...allVersions].sort((a, b) => {
+    // Simple version comparison - enhance if needed
+    return b.localeCompare(a);
+  });
+  const isLatest = sortedVersions[0] === specInfo.version;
   
   // Generate frontmatter
   const frontmatter = `---
 id: ${specInfo.version}
 title: ${metadata?.title || specInfo.specName} v${specInfo.version}
-sidebar_label: v${specInfo.version}
+sidebar_label: v${specInfo.version}${isLatest ? ' (latest)' : ''}
 ---`;
 
-  // Generate header
+  // Generate header with enhanced type information
   const header = `
 # ${metadata?.title || specInfo.specName}
 
-**Version:** ${specInfo.version}  
+${generateVersionBadge(specInfo.version, isLatest)}
+
 **Publisher:** ${specInfo.publisher}  
-**Type:** ${spec.type || 'N/A'}
+**Type:** ${formatTypeReference(spec.type)}  
+${includes ? `**Composes:** ${formatIncludes(includes)}  ` : ''}
 
 ${metadata?.description || ''}
 `;
 
+  // Generate version navigation
+  const versionNav = generateVersionNavigation(specInfo, allVersions);
+  
+  // Generate type hierarchy section
+  const typeHierarchySection = generateTypeHierarchySection(spec, specInfo);
+  
   // Generate metadata section
   const metadataSection = generateMetadataSection(metadata);
   
@@ -33,12 +49,106 @@ ${metadata?.description || ''}
 
 ${header}
 
+${versionNav}
+
+${typeHierarchySection}
+
 ${metadataSection}
 
 ${schemaSection}
 
 ${examplesSection}
 `;
+}
+
+function generateVersionBadge(version, isLatest) {
+  const badges = [];
+  
+  // Version badge
+  badges.push(`![Version](https://img.shields.io/badge/version-${version}-blue)`);
+  
+  // Latest badge
+  if (isLatest) {
+    badges.push(`![Latest](https://img.shields.io/badge/latest-✓-green)`);
+  }
+  
+  // Stability badge
+  const isStable = version.match(/^\d+\.\d+\.\d+$/) && !version.startsWith('0.');
+  if (isStable) {
+    badges.push(`![Stable](https://img.shields.io/badge/stability-stable-green)`);
+  } else {
+    badges.push(`![Pre-release](https://img.shields.io/badge/stability-pre--release-orange)`);
+  }
+  
+  return badges.join(' ');
+}
+
+function formatTypeReference(type) {
+  if (!type) return 'N/A';
+  
+  // Check if it's a special type
+  if (type === 'canon-protocol.org/type@0.1.0') {
+    return '`canon-protocol.org/type@0.1.0` (meta-type)';
+  }
+  
+  // Format as inline code
+  return `\`${type}\``;
+}
+
+function formatIncludes(includes) {
+  if (!includes || includes.length === 0) return '';
+  
+  const formatted = includes.map(inc => `\`${inc}\``).join(', ');
+  return formatted;
+}
+
+function generateVersionNavigation(specInfo, allVersions) {
+  if (allVersions.length <= 1) return '';
+  
+  let nav = '## Version Navigation\n\n';
+  nav += '<div class="version-nav">\n\n';
+  
+  // Sort versions
+  const sortedVersions = [...allVersions].sort((a, b) => b.localeCompare(a));
+  
+  nav += '**Available versions:** ';
+  nav += sortedVersions.map(v => {
+    if (v === specInfo.version) {
+      return `**${v}** (current)`;
+    }
+    return `[${v}](../${v})`;
+  }).join(' • ');
+  
+  nav += '\n\n</div>\n';
+  
+  return nav;
+}
+
+function generateTypeHierarchySection(spec, specInfo) {
+  let section = '## Type Information\n\n';
+  
+  // Special case for the meta-type
+  if (specInfo.specName === 'type') {
+    section += ':::info Meta-Type\n';
+    section += 'This is the foundational meta-type from which all other Canon Protocol types derive. ';
+    section += 'It defines the structure and validation rules for creating new types.\n';
+    section += ':::\n\n';
+  } else if (spec.type) {
+    section += '### Derives From\n\n';
+    section += `This type derives from: ${formatTypeReference(spec.type)}\n\n`;
+  }
+  
+  // Show what this type includes/composes
+  if (spec.includes && spec.includes.length > 0) {
+    section += '### Composes\n\n';
+    section += 'This type composes the following types:\n\n';
+    for (const included of spec.includes) {
+      section += `- ${formatTypeReference(included)}\n`;
+    }
+    section += '\n';
+  }
+  
+  return section;
 }
 
 function generateMetadataSection(metadata) {
@@ -216,7 +326,23 @@ function generateSchemaDescription(schema) {
 }
 
 function generateExamplesSection(spec) {
-  let section = '## Example\n\n';
+  let section = '## Example Usage\n\n';
+  
+  // Show how to reference this type in another spec
+  if (spec._info && spec._info.specName !== 'type') {
+    section += '### Using this Type\n\n';
+    section += 'To use this specification in your Canon project:\n\n';
+    section += '```yaml\n';
+    section += `canon: "1.0"\n`;
+    section += `type: ${spec._info.publisher}/${spec._info.specName}@${spec._info.version}\n`;
+    section += 'metadata:\n';
+    section += '  id: my-implementation\n';
+    section += '  version: 1.0.0\n';
+    section += '  publisher: example.com\n';
+    section += '```\n\n';
+  }
+  
+  section += '### Complete Example\n\n';
   
   // Generate a complete example based on the schema
   const example = generateExampleFromSchema(spec.schema);
@@ -225,6 +351,13 @@ function generateExamplesSection(spec) {
   section += `canon: "${spec.canon || '1.0'}"\n`;
   if (spec.type) {
     section += `type: ${spec.type}\n`;
+  }
+  
+  if (spec.includes && spec.includes.length > 0) {
+    section += 'includes:\n';
+    for (const inc of spec.includes) {
+      section += `  - ${inc}\n`;
+    }
   }
   
   if (spec.metadata) {
