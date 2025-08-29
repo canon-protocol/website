@@ -1,268 +1,465 @@
 /**
- * Custom styles for Canon Protocol documentation
+ * Canon Protocol Design System
  */
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #4a5ae5;
-  --ifm-color-primary-dark: #3847e0;
-  --ifm-color-primary-darker: #3241dd;
-  --ifm-color-primary-darkest: #2333c7;
-  --ifm-color-primary-light: #5c6aea;
-  --ifm-color-primary-lighter: #6270ec;
-  --ifm-color-primary-lightest: #7b86f0;
+  /* Canon Protocol Brand Colors */
+  --canon-primary: #5B21B6;        /* Deep purple */
+  --canon-primary-light: #7C3AED;  /* Lighter purple */
+  --canon-primary-dark: #4C1D95;   /* Darker purple */
+  --canon-accent: #EC4899;         /* Magenta accent */
+  --canon-success: #10B981;
+  --canon-warning: #F59E0B;
+  --canon-danger: #EF4444;
+  --canon-info: #3B82F6;
   
-  --ifm-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
-    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 
+  /* Override Infima variables with Canon colors */
+  --ifm-color-primary: var(--canon-primary);
+  --ifm-color-primary-dark: var(--canon-primary-dark);
+  --ifm-color-primary-darker: #3B1574;
+  --ifm-color-primary-darkest: #2E1065;
+  --ifm-color-primary-light: var(--canon-primary-light);
+  --ifm-color-primary-lighter: #8B5CF6;
+  --ifm-color-primary-lightest: #A78BFA;
+  
+  /* Typography */
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 
     'Helvetica Neue', sans-serif;
-  --ifm-font-family-monospace: 'SF Mono', Monaco, 'Cascadia Code', 
+  --ifm-font-family-monospace: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 
     'Roboto Mono', Menlo, Consolas, 'Courier New', monospace;
   
-  --ifm-code-font-size: 90%;
-  --ifm-code-border-radius: 4px;
-  --ifm-code-padding-vertical: 0.1rem;
-  --ifm-code-padding-horizontal: 0.3rem;
+  --ifm-heading-font-family: var(--ifm-font-family-base);
+  --ifm-heading-font-weight: 700;
+  --ifm-font-weight-bold: 700;
+  --ifm-font-weight-semibold: 600;
+  --ifm-font-weight-normal: 400;
+  
+  /* Spacing and sizing */
+  --ifm-code-font-size: 88%;
+  --ifm-code-border-radius: 6px;
+  --ifm-code-padding-vertical: 0.15rem;
+  --ifm-code-padding-horizontal: 0.4rem;
   
   --ifm-navbar-height: 4rem;
-  --ifm-navbar-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ifm-navbar-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   
-  --ifm-toc-border-color: #f0f0f0;
-  --ifm-color-emphasis-300: #f0f0f0;
+  --ifm-global-radius: 0.375rem;
+  --ifm-button-border-radius: 0.5rem;
   
-  --docusaurus-highlighted-code-line-bg: rgba(74, 90, 229, 0.1);
+  /* Colors */
+  --ifm-background-color: #FAFAFA;
+  --ifm-background-surface-color: #FFFFFF;
+  --ifm-toc-border-color: #E5E7EB;
+  --ifm-color-emphasis-100: #F3F4F6;
+  --ifm-color-emphasis-200: #E5E7EB;
+  --ifm-color-emphasis-300: #D1D5DB;
+  --ifm-color-emphasis-400: #9CA3AF;
+  --ifm-color-emphasis-500: #6B7280;
+  --ifm-color-emphasis-600: #4B5563;
+  --ifm-color-emphasis-700: #374151;
+  --ifm-color-emphasis-800: #1F2937;
+  --ifm-color-emphasis-900: #111827;
   
-  --ifm-heading-font-weight: 600;
-  --ifm-h1-font-size: 2rem;
-  --ifm-h2-font-size: 1.5rem;
-  --ifm-h3-font-size: 1.25rem;
+  --docusaurus-highlighted-code-line-bg: rgba(91, 33, 182, 0.1);
   
-  --ifm-global-radius: 0.25rem;
-  --ifm-button-border-radius: 0.375rem;
-  
-  --ifm-color-success: #10b981;
-  --ifm-color-info: #3b82f6;
-  --ifm-color-warning: #f59e0b;
-  --ifm-color-danger: #ef4444;
+  /* Custom properties */
+  --canon-gradient: linear-gradient(135deg, var(--canon-primary) 0%, var(--canon-accent) 100%);
+  --canon-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --canon-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --canon-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --canon-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Dark mode colors */
 [data-theme='dark'] {
-  --ifm-color-primary: #7b86f0;
-  --ifm-color-primary-dark: #6270ec;
-  --ifm-color-primary-darker: #5c6aea;
-  --ifm-color-primary-darkest: #4a5ae5;
-  --ifm-color-primary-light: #949df4;
-  --ifm-color-primary-lighter: #9aa2f5;
-  --ifm-color-primary-lightest: #b9bff8;
+  --canon-primary: #8B5CF6;
+  --canon-primary-light: #A78BFA;
+  --canon-primary-dark: #7C3AED;
+  --canon-accent: #F472B6;
   
-  --ifm-background-color: #0f1419;
-  --ifm-background-surface-color: #1a1f2a;
+  --ifm-color-primary: var(--canon-primary);
+  --ifm-color-primary-dark: var(--canon-primary-dark);
+  --ifm-color-primary-darker: #6D28D9;
+  --ifm-color-primary-darkest: #5B21B6;
+  --ifm-color-primary-light: var(--canon-primary-light);
+  --ifm-color-primary-lighter: #C4B5FD;
+  --ifm-color-primary-lightest: #DDD6FE;
   
-  --ifm-toc-border-color: #2a303c;
-  --ifm-color-emphasis-300: #2a303c;
+  --ifm-background-color: #0F0F11;
+  --ifm-background-surface-color: #18181B;
+  --ifm-navbar-background-color: rgba(15, 15, 17, 0.8);
   
-  --docusaurus-highlighted-code-line-bg: rgba(123, 134, 240, 0.15);
+  --ifm-toc-border-color: #27272A;
+  --ifm-color-emphasis-100: #18181B;
+  --ifm-color-emphasis-200: #27272A;
+  --ifm-color-emphasis-300: #3F3F46;
+  --ifm-color-emphasis-400: #52525B;
+  --ifm-color-emphasis-500: #71717A;
+  --ifm-color-emphasis-600: #A1A1AA;
+  --ifm-color-emphasis-700: #D4D4D8;
+  --ifm-color-emphasis-800: #E4E4E7;
+  --ifm-color-emphasis-900: #F4F4F5;
+  
+  --docusaurus-highlighted-code-line-bg: rgba(139, 92, 246, 0.15);
 }
 
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 /* Typography improvements */
+body {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
 .markdown {
   line-height: 1.75;
 }
 
-.markdown h1:first-child {
+.markdown h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
   margin-top: 0;
 }
 
-.markdown > h2 {
+.markdown h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-top: 2.5rem;
+}
+
+.markdown h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
   margin-top: 2rem;
 }
 
-.markdown > h3 {
-  margin-top: 1.5rem;
-}
-
-/* Code blocks */
+/* Code blocks with Canon styling */
 code {
   border: 1px solid var(--ifm-color-emphasis-300);
-  background-color: var(--ifm-color-emphasis-100);
+  background: var(--ifm-color-emphasis-100);
+  font-weight: 500;
 }
 
 [data-theme='dark'] code {
-  background-color: var(--ifm-background-surface-color);
+  background: var(--ifm-color-emphasis-200);
+  border-color: var(--ifm-color-emphasis-300);
+}
+
+pre code {
+  border: none;
+  background: none;
+  font-weight: 400;
 }
 
 /* Tables */
 table {
   display: table;
   width: 100%;
-  margin: 1.5rem 0;
+  margin: 2rem 0;
   border-collapse: collapse;
+  overflow: hidden;
+  border-radius: var(--ifm-global-radius);
+  box-shadow: var(--canon-shadow);
+}
+
+table thead {
+  background: var(--ifm-color-emphasis-100);
+}
+
+[data-theme='dark'] table thead {
+  background: var(--ifm-color-emphasis-200);
 }
 
 table thead tr {
-  border-bottom: 2px solid var(--ifm-table-border-color);
+  border-bottom: 2px solid var(--ifm-color-emphasis-200);
+}
+
+[data-theme='dark'] table thead tr {
+  border-bottom-color: var(--ifm-color-emphasis-300);
 }
 
 table tbody tr {
-  border-bottom: 1px solid var(--ifm-table-border-color);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
-table th {
-  font-weight: 600;
-  text-align: left;
-  padding: 0.75rem 1rem;
-}
-
-table td {
-  padding: 0.75rem 1rem;
+[data-theme='dark'] table tbody tr {
+  border-bottom-color: var(--ifm-color-emphasis-300);
 }
 
 table tbody tr:last-child {
   border-bottom: none;
 }
 
-/* Navbar */
+table th {
+  font-weight: 600;
+  text-align: left;
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--ifm-color-emphasis-700);
+}
+
+table td {
+  padding: 0.875rem 1rem;
+}
+
+/* Navbar with Canon branding */
 .navbar {
-  backdrop-filter: saturate(180%) blur(10px);
+  backdrop-filter: saturate(180%) blur(20px);
   background-color: rgba(255, 255, 255, 0.8);
   border-bottom: 1px solid var(--ifm-toc-border-color);
+  box-shadow: var(--canon-shadow-sm);
 }
 
 [data-theme='dark'] .navbar {
-  background-color: rgba(15, 20, 25, 0.8);
-  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+  background-color: var(--ifm-navbar-background-color);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
 .navbar__title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1.125rem;
+  letter-spacing: -0.025em;
 }
 
-/* Sidebar */
-.menu__link {
-  border-radius: 0.25rem;
-  transition: all 0.2s ease;
+.navbar__logo {
+  margin-right: 0.75rem;
+  height: 2rem;
+  width: 2rem;
 }
 
-.menu__link:hover {
-  background-color: var(--ifm-menu-color-background-hover);
-}
-
-.menu__link--active {
-  font-weight: 600;
-}
-
-/* Footer */
-.footer {
-  background-color: var(--ifm-background-surface-color);
-  border-top: 1px solid var(--ifm-toc-border-color);
-}
-
-.footer__title {
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-}
-
-/* Admonitions */
-.admonition {
-  border-radius: 0.5rem;
-  border-left-width: 4px;
-}
-
-/* TOC */
-.table-of-contents {
-  font-size: 0.875rem;
-}
-
-.table-of-contents__link {
-  padding: 0.25rem 0;
-  color: var(--ifm-color-content-secondary);
-}
-
-.table-of-contents__link--active {
-  color: var(--ifm-color-primary);
+/* Sidebar improvements */
+.menu {
   font-weight: 500;
 }
 
-/* Homepage specific styles */
-.hero {
-  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-darker) 100%);
-  color: white;
-  padding: 4rem 0;
+.menu__link {
+  border-radius: var(--ifm-global-radius);
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
 }
 
-[data-theme='dark'] .hero {
-  background: linear-gradient(135deg, var(--ifm-color-primary-darker) 0%, var(--ifm-color-primary-darkest) 100%);
+.menu__link:hover {
+  background-color: var(--ifm-color-emphasis-100);
+  color: var(--canon-primary);
+}
+
+[data-theme='dark'] .menu__link:hover {
+  background-color: var(--ifm-color-emphasis-200);
+}
+
+.menu__link--active {
+  background: var(--canon-gradient);
+  color: white !important;
+  font-weight: 600;
+}
+
+.menu__link--active:hover {
+  background: var(--canon-gradient);
+  color: white !important;
+}
+
+/* Hero section */
+.hero {
+  background: var(--canon-gradient);
+  padding: 6rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.3) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .hero__title {
-  font-size: 3rem;
-  font-weight: 700;
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
 }
 
 .hero__subtitle {
-  font-size: 1.25rem;
-  opacity: 0.9;
-  margin-top: 1rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+  opacity: 0.95;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+@media (max-width: 768px) {
+  .hero__title {
+    font-size: 2.5rem;
+  }
+  
+  .hero__subtitle {
+    font-size: 1.125rem;
+  }
 }
 
 /* Buttons */
 .button {
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  box-shadow: var(--canon-shadow);
 }
 
 .button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--canon-shadow-md);
+}
+
+.button--primary {
+  background: var(--canon-gradient);
+  border: none;
+}
+
+.button--primary:hover {
+  background: var(--canon-gradient);
+  opacity: 0.9;
+}
+
+.button--secondary {
+  background: white;
+  color: var(--canon-primary);
+  border: 2px solid var(--canon-primary);
+}
+
+.button--secondary:hover {
+  background: var(--ifm-color-emphasis-100);
+  color: var(--canon-primary-dark);
+  border-color: var(--canon-primary-dark);
+}
+
+[data-theme='dark'] .button--secondary {
+  background: var(--ifm-background-surface-color);
+  color: var(--canon-primary);
+  border-color: var(--canon-primary);
+}
+
+[data-theme='dark'] .button--secondary:hover {
+  background: var(--ifm-color-emphasis-200);
 }
 
 /* Cards */
 .card {
-  border-radius: 0.5rem;
-  border: 1px solid var(--ifm-color-emphasis-300);
-  transition: all 0.2s ease;
+  border-radius: var(--ifm-global-radius);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  box-shadow: var(--canon-shadow);
+  transition: all 0.3s ease;
+  background: var(--ifm-background-surface-color);
 }
 
 .card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  box-shadow: var(--canon-shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--canon-primary-light);
 }
 
-[data-theme='dark'] .card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+/* Footer */
+.footer {
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--ifm-toc-border-color);
+  padding: 3rem 0;
 }
 
-/* Improve inline code readability */
-p code,
-li code {
-  font-size: 0.875em;
-  font-weight: 500;
+.footer__title {
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  color: var(--ifm-color-emphasis-700);
 }
 
-/* Specification tables */
-.spec-table {
-  font-size: 0.9rem;
+.footer__link-item {
+  font-size: 0.875rem;
+  line-height: 2;
 }
 
-.spec-table th {
-  background-color: var(--ifm-color-emphasis-100);
+.footer__copyright {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ifm-toc-border-color);
+  font-size: 0.875rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+/* Admonitions with Canon style */
+.admonition {
+  border-radius: var(--ifm-global-radius);
+  border-left-width: 4px;
+  box-shadow: var(--canon-shadow-sm);
+}
+
+.admonition-heading {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* TOC styling */
+.table-of-contents {
+  font-size: 0.875rem;
+  border-left: 2px solid var(--ifm-toc-border-color);
+}
+
+.table-of-contents__link {
+  padding: 0.375rem 0 0.375rem 1rem;
+  color: var(--ifm-color-emphasis-600);
+  transition: all 0.2s ease;
+}
+
+.table-of-contents__link:hover {
+  color: var(--canon-primary);
+}
+
+.table-of-contents__link--active {
+  color: var(--canon-primary);
   font-weight: 600;
+  border-left: 2px solid var(--canon-primary);
+  margin-left: -2px;
 }
 
-[data-theme='dark'] .spec-table th {
-  background-color: var(--ifm-background-surface-color);
-}
-
-/* Version badges */
+/* Version badges in documentation */
 .version-badge {
   display: inline-block;
-  padding: 0.125rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 600;
-  background-color: var(--ifm-color-primary-lighter);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background: var(--canon-gradient);
   color: white;
+}
+
+/* Specification documentation enhancements */
+.spec-header {
+  padding: 2rem;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: var(--ifm-global-radius);
+  margin-bottom: 2rem;
+}
+
+[data-theme='dark'] .spec-header {
+  background: var(--ifm-color-emphasis-200);
 }
 
 /* Responsive improvements */
@@ -271,11 +468,7 @@ li code {
     font-size: 1rem;
   }
   
-  .hero__title {
-    font-size: 2rem;
-  }
-  
-  .hero__subtitle {
-    font-size: 1.125rem;
+  .hero {
+    padding: 4rem 0;
   }
 }

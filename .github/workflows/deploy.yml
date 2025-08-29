@@ -1,10 +1,29 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy Documentation
 
 on:
+  # Manual trigger to update specs and deploy
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Deployment message'
+        required: false
+        default: 'Deploy with latest Canon Protocol specifications'
+  
+  # Optional: Run weekly to catch any spec updates
+  schedule:
+    - cron: '0 0 * * 0'  # Every Sunday at midnight
+  
+  # Still allow push to main for website code changes only
+  # (without necessarily updating specs)
   push:
     branches:
       - main
-  workflow_dispatch:
+    paths:
+      - 'src/**'
+      - 'static/**'
+      - 'docusaurus.config.ts'
+      - 'package*.json'
+      - '.github/workflows/deploy.yml'
 
 permissions:
   contents: read
@@ -19,9 +38,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout website repository
         uses: actions/checkout@v4
         
+      - name: Checkout canon repository
+        uses: actions/checkout@v4
+        with:
+          repository: canon-protocol/canon
+          path: canon-specs
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -30,6 +55,11 @@ jobs:
           
       - name: Install dependencies
         run: npm ci
+        
+      - name: Process Canon specifications
+        run: |
+          echo "📚 Fetching latest Canon Protocol specifications..."
+          node scripts/process-specs.js
         
       - name: Build website
         run: npm run build

@@ -1,23 +1,47 @@
 /**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
+ * Canon Protocol Homepage Styles
  */
 
 .heroBanner {
-  padding: 4rem 0;
-  text-align: center;
   position: relative;
   overflow: hidden;
+  text-align: center;
+  color: white;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+.heroBanner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+  pointer-events: none;
+  opacity: 0.4;
 }
 
 .buttons {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 2rem;
+  }
+  
+  .buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .buttons > * {
+    width: 100%;
+    max-width: 400px;
+  }
 }

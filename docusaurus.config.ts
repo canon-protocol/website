@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Canon Protocol',
   tagline: 'A Universal Specification Registry Protocol',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/canon-logo.png',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -55,12 +55,12 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/canon-logo.png',
     navbar: {
       title: 'Canon Protocol',
       logo: {
         alt: 'Canon Protocol Logo',
-        src: 'img/logo.svg',
+        src: 'img/canon-logo.png',
       },
       items: [
         {

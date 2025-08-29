@@ -5,51 +5,84 @@ import styles from './styles.module.css';
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  icon: string;
   description: ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Decentralized Registry',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'Universal Type System',
+    icon: '🔧',
     description: (
       <>
-        Canon Protocol enables decentralized specification management with no single 
-        point of control. Publishers maintain sovereignty over their specifications 
-        while ensuring global discoverability.
+        Define and share specifications using a powerful meta-type system. 
+        Every type derives from a foundational schema, ensuring consistency 
+        and interoperability across all implementations.
       </>
     ),
   },
   {
-    title: 'Cryptographically Signed',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: 'Decentralized by Design',
+    icon: '🌐',
     description: (
       <>
-        Every specification is cryptographically signed by its publisher, ensuring 
-        authenticity and integrity. Verify the source and detect any tampering 
-        with built-in signature verification.
+        No central authority or single point of failure. Publishers maintain 
+        full control over their specifications while benefiting from a 
+        global discovery network.
       </>
     ),
   },
   {
-    title: 'Universal Compatibility',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: 'Cryptographic Trust',
+    icon: '🔐',
     description: (
       <>
-        Works with any specification format, programming language, or ecosystem. 
-        Canon Protocol provides a universal layer for specification discovery 
+        Every specification is signed and verified using Ed25519 signatures. 
+        Ensure authenticity and detect tampering with built-in cryptographic 
+        verification at every layer.
+      </>
+    ),
+  },
+  {
+    title: 'Semantic Versioning',
+    icon: '📦',
+    description: (
+      <>
+        Full semantic versioning with compatibility tracking. Use flexible 
+        version constraints to ensure your dependencies evolve safely 
+        without breaking changes.
+      </>
+    ),
+  },
+  {
+    title: 'Registry Federation',
+    icon: '🔄',
+    description: (
+      <>
+        Multiple registries can federate and share specifications. Build 
+        private registries for internal use or contribute to the public 
+        ecosystem.
+      </>
+    ),
+  },
+  {
+    title: 'Language Agnostic',
+    icon: '💻',
+    description: (
+      <>
+        Works with any programming language or specification format. Canon 
+        Protocol provides the universal layer for specification discovery 
         and distribution.
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({title, icon, description}: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        <div className={styles.featureIcon}>{icon}</div>
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>
@@ -63,6 +96,12 @@ export default function HomepageFeatures(): ReactNode {
   return (
     <section className={styles.features}>
       <div className="container">
+        <div className="text--center margin-bottom--lg">
+          <Heading as="h2">Why Canon Protocol?</Heading>
+          <p className={styles.featuresSubtitle}>
+            Canon Protocol reimagines how specifications are created, shared, and evolved
+          </p>
+        </div>
         <div className="row">
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
