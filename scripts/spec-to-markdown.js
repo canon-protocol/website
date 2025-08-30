@@ -28,7 +28,7 @@ custom_edit_url: null
   const header = `
 # ${metadata?.title || specInfo.specName}
 
-${generateVersionBadge(specInfo.version, isLatest)}
+${generateBadges(spec, specInfo.version, isLatest)}
 
 **Publisher:** ${specInfo.publisher}  
 **Type:** ${formatTypeReference(spec.type, true)}  
@@ -39,9 +39,6 @@ ${metadata?.description || ''}
 
   // Generate version navigation
   const versionNav = generateVersionNavigation(specInfo, allVersions);
-  
-  // Generate meta-type notice if applicable
-  const metaTypeNotice = generateMetaTypeNotice(specInfo);
   
   // Generate schema section
   const schemaSection = generateSchemaSection(schema);
@@ -62,8 +59,6 @@ ${header}
 
 ${versionNav}
 
-${metaTypeNotice}
-
 ${schemaSection}
 
 ${specContentSection}
@@ -74,7 +69,7 @@ ${sourceFilesSection}
 `;
 }
 
-function generateVersionBadge(version, isLatest) {
+function generateBadges(spec, version, isLatest) {
   const badges = [];
   
   // Version badge
@@ -91,6 +86,56 @@ function generateVersionBadge(version, isLatest) {
     badges.push(`![Stable](https://img.shields.io/badge/stability-stable-green)`);
   } else {
     badges.push(`![Pre-release](https://img.shields.io/badge/stability-pre--release-orange)`);
+  }
+  
+  // Custom page labels
+  if (spec.page_labels && Array.isArray(spec.page_labels)) {
+    for (const label of spec.page_labels) {
+      if (!label.text) continue;
+      
+      // Map variant to color
+      const variantColors = {
+        primary: 'blue',
+        success: 'green',
+        warning: 'orange',
+        danger: 'red',
+        info: 'lightblue',
+        neutral: 'gray'
+      };
+      const color = variantColors[label.variant] || 'blue';
+      
+      // Map common icon names to emoji
+      const iconMap = {
+        'star': '⭐',
+        'check': '✓',
+        'check-circle': '✅',
+        'info': 'ℹ️',
+        'warning': '⚠️',
+        'danger': '⛔',
+        'fire': '🔥',
+        'rocket': '🚀',
+        'lock': '🔒',
+        'shield': '🛡️',
+        'heart': '❤️',
+        'book': '📚',
+        'code': '💻',
+        'globe': '🌍',
+        'key': '🔑'
+      };
+      
+      // Build label text with optional icon
+      let labelText = label.text;
+      if (label.icon && iconMap[label.icon]) {
+        labelText = `${iconMap[label.icon]} ${label.text}`;
+      }
+      
+      // Encode label text for URL (handle spaces and special chars)
+      const encodedText = encodeURIComponent(labelText).replace(/-/g, '--');
+      
+      // Create badge with optional tooltip
+      const badgeAlt = label.tooltip ? `${label.text}: ${label.tooltip}` : label.text;
+      badges.push(`![${badgeAlt}](https://img.shields.io/badge/${encodedText}-${color})`);
+    }
   }
   
   return badges.join(' ');
@@ -168,17 +213,6 @@ function generateVersionNavigation(specInfo, allVersions) {
   return nav;
 }
 
-function generateMetaTypeNotice(specInfo) {
-  // Special notice for the meta-type
-  if (specInfo.specName === 'type') {
-    let notice = ':::info Meta-Type\n';
-    notice += 'This is the foundational meta-type from which all other Canon Protocol types derive. ';
-    notice += 'It defines the structure and validation rules for creating new types.\n';
-    notice += ':::\n\n';
-    return notice;
-  }
-  return '';
-}
 
 
 function generateSchemaSection(schema) {
