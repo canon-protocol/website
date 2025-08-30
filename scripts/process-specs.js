@@ -202,12 +202,29 @@ async function processSpecs() {
   
   console.log('\n📊 Processing specifications...\n');
   
-  // Sort specs to process 'type' first, then 'canon-protocol', then others
+  // Sort specs based on page_order if present, then alphabetically
   allSpecs.sort((a, b) => {
-    const priority = { 'type': 0, 'canon-protocol': 1 };
-    const aPriority = priority[a._info.specName] ?? 99;
-    const bPriority = priority[b._info.specName] ?? 99;
-    return aPriority - bPriority;
+    // Check if specs have page_order field
+    const aHasOrder = typeof a.page_order === 'number';
+    const bHasOrder = typeof b.page_order === 'number';
+    
+    // Both have page_order: sort by page_order ascending
+    if (aHasOrder && bHasOrder) {
+      return a.page_order - b.page_order;
+    }
+    
+    // Only a has page_order: a comes first
+    if (aHasOrder && !bHasOrder) {
+      return -1;
+    }
+    
+    // Only b has page_order: b comes first
+    if (!aHasOrder && bHasOrder) {
+      return 1;
+    }
+    
+    // Neither has page_order: sort alphabetically by spec name
+    return a._info.specName.localeCompare(b._info.specName);
   });
   
   // First pass: group all specs by type
@@ -302,12 +319,32 @@ async function processSpecs() {
 function generateIndexPage(specs, specsByType) {
   ensureDirectoryExists(DOCS_OUTPUT_PATH);
   
+  // Sort categories based on page_order of their latest version
   const categories = Object.keys(specsByType).sort((a, b) => {
-    // Sort with type first, then canon-protocol, then others
-    const priority = { 'type': 0, 'canon-protocol': 1 };
-    const aPriority = priority[a] ?? 99;
-    const bPriority = priority[b] ?? 99;
-    if (aPriority !== bPriority) return aPriority - bPriority;
+    // Get the latest version of each spec type (first in the sorted array)
+    const aLatest = specsByType[a][0];
+    const bLatest = specsByType[b][0];
+    
+    // Check if specs have page_order field
+    const aHasOrder = typeof aLatest.page_order === 'number';
+    const bHasOrder = typeof bLatest.page_order === 'number';
+    
+    // Both have page_order: sort by page_order ascending
+    if (aHasOrder && bHasOrder) {
+      return aLatest.page_order - bLatest.page_order;
+    }
+    
+    // Only a has page_order: a comes first
+    if (aHasOrder && !bHasOrder) {
+      return -1;
+    }
+    
+    // Only b has page_order: b comes first
+    if (!aHasOrder && bHasOrder) {
+      return 1;
+    }
+    
+    // Neither has page_order: sort alphabetically
     return a.localeCompare(b);
   });
   
@@ -473,15 +510,26 @@ ${latestSpec.metadata?.description || ''}
 `;
   }
   
+  // Build type hierarchy dynamically based on discovered specs
+  const typeSpecs = categories.filter(cat => {
+    // Only include specs that have 'type' as their type (direct children of type)
+    // but exclude 'type' itself (it's self-referential)
+    const latestSpec = specsByType[cat][0];
+    return cat !== 'type' && latestSpec.type && latestSpec.type.includes('canon-protocol.org/type');
+  });
+  
   markdown += `## Type Hierarchy
 
 \`\`\`
-type (meta-type)
-├── canon-protocol
-├── registry
-├── project
-├── protocol
-└── canon-protocol-registry
+type (meta-type)`;
+  
+  typeSpecs.forEach((spec, index) => {
+    const isLast = index === typeSpecs.length - 1;
+    const prefix = isLast ? '└──' : '├──';
+    markdown += `\n${prefix} ${spec}`;
+  });
+  
+  markdown += `
 \`\`\`
 
 ## Why Canon Protocol?
@@ -518,7 +566,7 @@ function generateCategoryFiles(specsByType) {
     
     const category = {
       label: latestSpec.metadata?.title || specName,
-      position: getPositionForSpec(specName),
+      position: getPositionForSpec(specName, latestSpec),
       link: {
         type: 'generated-index',
         title: latestSpec.metadata?.title || specName,
@@ -562,17 +610,15 @@ import { Redirect } from '@docusaurus/router';
   }
 }
 
-// Determine sidebar position based on spec type
-function getPositionForSpec(specName) {
-  const order = {
-    'type': 1,  // Meta-type comes first
-    'canon-protocol': 2,
-    'canon-protocol-registry': 3,
-    'registry': 4,
-    'project': 5,
-    'protocol': 6
-  };
-  return order[specName] || 99;
+// Determine sidebar position based on page_order or default
+function getPositionForSpec(specName, spec) {
+  // If spec has page_order, use it
+  if (typeof spec?.page_order === 'number') {
+    return spec.page_order;
+  }
+  
+  // Otherwise return a high number so unordered specs come after ordered ones
+  return 999;
 }
 
 // Run the processor
