@@ -1,3 +1,24 @@
+// Helper function to safely escape YAML string values
+function escapeYamlString(str) {
+  if (!str) return str;
+  
+  // Check if string contains special YAML characters that require quoting
+  const needsQuoting = /[:{}[\],&*#?|<>=!%@`]/.test(str) || 
+                       str.startsWith('-') || 
+                       str.startsWith('>') || 
+                       str.startsWith('|') ||
+                       str.includes('\n') ||
+                       str.includes('"');
+  
+  if (needsQuoting) {
+    // Escape any existing double quotes
+    const escaped = str.replace(/"/g, '\\"');
+    return `"${escaped}"`;
+  }
+  
+  return str;
+}
+
 function generateMarkdown(spec, specInfo, context = {}) {
   const { metadata, schema, includes } = spec;
   const { allVersions = [], typeHierarchy = {}, sourceFiles = {}, typeSchemas = {}, allSpecs = {} } = context;
@@ -14,11 +35,14 @@ function generateMarkdown(spec, specInfo, context = {}) {
   });
   const isLatest = sortedVersions[0] === specInfo.version;
   
-  // Generate frontmatter
+  // Generate frontmatter with properly escaped values
+  const title = `${metadata?.title || specInfo.specName} v${specInfo.version}`;
+  const sidebarLabel = metadata?.title || specInfo.specName;
+  
   const frontmatter = `---
 id: ${specInfo.version}
-title: ${metadata?.title || specInfo.specName} v${specInfo.version}
-sidebar_label: ${metadata?.title || specInfo.specName}
+title: ${escapeYamlString(title)}
+sidebar_label: ${escapeYamlString(sidebarLabel)}
 sidebar_position: ${isLatest ? 1 : 2}
 hide_table_of_contents: false
 custom_edit_url: null
