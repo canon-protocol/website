@@ -71,12 +71,6 @@ const config: Config = {
           label: 'Specifications',
         },
         {
-          type: 'doc',
-          docId: 'getting-started',
-          position: 'left',
-          label: 'Getting Started',
-        },
-        {
           href: 'https://github.com/canon-protocol',
           label: 'GitHub',
           position: 'right',
@@ -89,10 +83,6 @@ const config: Config = {
         {
           title: 'Documentation',
           items: [
-            {
-              label: 'Getting Started',
-              to: '/getting-started',
-            },
             {
               label: 'Specifications',
               to: '/',

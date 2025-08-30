@@ -4,14 +4,9 @@ const sidebars: SidebarsConfig = {
   // Main specification sidebar - NO CATEGORIES, ONLY LATEST VERSIONS
   specSidebar: [
     {
-      type: 'doc',
-      id: 'getting-started',
-      label: 'Getting Started',
-    },
-    {
       type: 'doc', 
       id: 'index',
-      label: 'Specifications Overview',
+      label: 'Overview',
     },
     {
       type: 'doc',
