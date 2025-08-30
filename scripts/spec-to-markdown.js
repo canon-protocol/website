@@ -339,22 +339,6 @@ function generateSpecContentSection(spec, specInfo, context) {
     return '';
   }
   
-  // Merge schemas from included types
-  let mergedSchema = { ...typeSchema.schema };
-  if (spec.includes && Array.isArray(spec.includes)) {
-    for (const includeUri of spec.includes) {
-      const includeMatch = includeUri.match(/([^@]+)@(.+)/);
-      if (includeMatch) {
-        const [, includeBase, includeVersion] = includeMatch;
-        const includeTypeUri = `${includeBase}@${includeVersion}`;
-        const includeSchema = typeSchemas[includeTypeUri];
-        if (includeSchema && includeSchema.schema) {
-          mergedSchema = { ...includeSchema.schema, ...mergedSchema };
-        }
-      }
-    }
-  }
-  
   // Get all spec fields (excluding protocol fields)
   const protocolFields = ['canon', 'type', 'metadata', 'includes', 'schema'];
   const specFields = Object.keys(spec).filter(key => !protocolFields.includes(key) && !key.startsWith('_'));
@@ -363,30 +347,103 @@ function generateSpecContentSection(spec, specInfo, context) {
     return '';
   }
   
+  // Track which fields belong to base type vs composed types
+  const baseTypeFields = [];
+  const composedTypeFields = {};
+  
+  // Separate fields by their source type
+  for (const fieldName of specFields) {
+    if (typeSchema.schema && typeSchema.schema[fieldName]) {
+      baseTypeFields.push(fieldName);
+    } else {
+      // Check which composed type this field comes from
+      if (spec.includes && Array.isArray(spec.includes)) {
+        for (const includeUri of spec.includes) {
+          const includeMatch = includeUri.match(/([^@]+)@(.+)/);
+          if (includeMatch) {
+            const [, includeBase, includeVersion] = includeMatch;
+            const includeTypeUri = `${includeBase}@${includeVersion}`;
+            const includeSchema = typeSchemas[includeTypeUri];
+            if (includeSchema && includeSchema.schema && includeSchema.schema[fieldName]) {
+              if (!composedTypeFields[includeUri]) {
+                composedTypeFields[includeUri] = [];
+              }
+              composedTypeFields[includeUri].push(fieldName);
+              break; // Found the source, stop looking
+            }
+          }
+        }
+      }
+    }
+  }
+  
   let section = '## Specification Content\n\n';
   section += ':::info\n';
-  section += 'This section displays the specification fields as defined by its type schema.\n';
+  section += 'This section displays the specification fields organized by their type definitions.\n';
   section += ':::\n\n';
   
-  // Sort fields by schema definition order, then alphabetically
-  const schemaFieldOrder = Object.keys(mergedSchema);
-  specFields.sort((a, b) => {
-    const aIndex = schemaFieldOrder.indexOf(a);
-    const bIndex = schemaFieldOrder.indexOf(b);
-    if (aIndex !== -1 && bIndex !== -1) {
-      return aIndex - bIndex;
-    }
-    if (aIndex !== -1) return -1;
-    if (bIndex !== -1) return 1;
-    return a.localeCompare(b);
-  });
-  
-  // Generate field displays
-  for (const fieldName of specFields) {
-    const fieldValue = spec[fieldName];
-    const fieldSchema = mergedSchema[fieldName] || {};
+  // Display base type fields first
+  if (baseTypeFields.length > 0) {
+    section += '### Core Properties\n\n';
+    section += `*These properties are defined by the base type: \`${spec.type}\`*\n\n`;
     
-    section += generateFieldDisplay(fieldName, fieldValue, fieldSchema);
+    // Sort base fields by schema definition order
+    const baseFieldOrder = Object.keys(typeSchema.schema);
+    baseTypeFields.sort((a, b) => {
+      const aIndex = baseFieldOrder.indexOf(a);
+      const bIndex = baseFieldOrder.indexOf(b);
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      return a.localeCompare(b);
+    });
+    
+    for (const fieldName of baseTypeFields) {
+      const fieldValue = spec[fieldName];
+      const fieldSchema = typeSchema.schema[fieldName] || {};
+      section += generateFieldDisplay(fieldName, fieldValue, fieldSchema);
+    }
+  }
+  
+  // Display composed type fields
+  if (Object.keys(composedTypeFields).length > 0) {
+    section += '### Composed Properties\n\n';
+    section += '*These properties are added through type composition:*\n\n';
+    
+    for (const [composedTypeUri, fields] of Object.entries(composedTypeFields)) {
+      // Get the composed type schema
+      const composedMatch = composedTypeUri.match(/([^@]+)@(.+)/);
+      if (composedMatch) {
+        const [, composedBase, composedVersion] = composedMatch;
+        const composedTypeKey = `${composedBase}@${composedVersion}`;
+        const composedSchema = typeSchemas[composedTypeKey];
+        
+        // Extract just the type name for the header
+        const typeName = composedBase.split('/').pop();
+        
+        section += `#### From ${typeName}\n\n`;
+        section += `*Properties from \`${composedTypeUri}\`:*\n\n`;
+        
+        // Sort composed fields by their schema definition order
+        if (composedSchema && composedSchema.schema) {
+          const composedFieldOrder = Object.keys(composedSchema.schema);
+          fields.sort((a, b) => {
+            const aIndex = composedFieldOrder.indexOf(a);
+            const bIndex = composedFieldOrder.indexOf(b);
+            if (aIndex !== -1 && bIndex !== -1) {
+              return aIndex - bIndex;
+            }
+            return a.localeCompare(b);
+          });
+          
+          for (const fieldName of fields) {
+            const fieldValue = spec[fieldName];
+            const fieldSchema = composedSchema.schema[fieldName] || {};
+            section += generateFieldDisplay(fieldName, fieldValue, fieldSchema);
+          }
+        }
+      }
+    }
   }
   
   return section;
