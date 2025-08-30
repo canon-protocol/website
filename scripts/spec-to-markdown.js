@@ -75,12 +75,27 @@ ${metadata?.description || ''}
   
   // Check if spec has primary content artifact
   let primaryContentSection = '';
+  let hasPrimaryContent = false;
   if (spec.artifacts) {
     primaryContentSection = generatePrimaryContentSection(spec, sourceFiles);
+    hasPrimaryContent = primaryContentSection !== '';
   }
   
   // Generate source files section
   const sourceFilesSection = generateSourceFilesSection(sourceFiles, specInfo, spec);
+  
+  // If there's primary content, make spec content collapsible
+  let finalSpecContentSection = specContentSection;
+  if (hasPrimaryContent && specContentSection) {
+    finalSpecContentSection = `
+<details>
+<summary><strong>📋 Specification Details</strong></summary>
+
+${specContentSection}
+
+</details>
+`;
+  }
   
   // Combine all sections
   return `${frontmatter}
@@ -93,7 +108,7 @@ ${primaryContentSection}
 
 ${schemaSection}
 
-${specContentSection}
+${finalSpecContentSection}
 
 ${examplesSection}
 
