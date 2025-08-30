@@ -133,8 +133,15 @@ function generateBadges(spec, version, isLatest) {
       const encodedText = encodeURIComponent(labelText).replace(/-/g, '--');
       
       // Create badge with optional tooltip
-      const badgeAlt = label.tooltip ? `${label.text}: ${label.tooltip}` : label.text;
-      badges.push(`![${badgeAlt}](https://img.shields.io/badge/${encodedText}-${color})`);
+      const badgeAlt = label.text;
+      const badgeImg = `![${badgeAlt}](https://img.shields.io/badge/${encodedText}-${color})`;
+      
+      // Wrap in HTML span with title for tooltip if provided
+      if (label.tooltip) {
+        badges.push(`<span title="${label.tooltip}">${badgeImg}</span>`);
+      } else {
+        badges.push(badgeImg);
+      }
     }
   }
   
