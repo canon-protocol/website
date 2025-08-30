@@ -790,7 +790,7 @@ function generatePrimaryContentSection(spec, sourceFiles) {
   
   // For markdown content, render it directly
   if (primaryArtifact.type && primaryArtifact.type.includes('markdown')) {
-    let section = '## Content\n\n';
+    let section = '';
     
     // Add metadata if this is a blog post
     if (spec.type && spec.type.includes('/blog-post@')) {
