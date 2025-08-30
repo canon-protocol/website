@@ -40,11 +40,8 @@ ${metadata?.description || ''}
   // Generate version navigation
   const versionNav = generateVersionNavigation(specInfo, allVersions);
   
-  // Generate type hierarchy section
-  const typeHierarchySection = generateTypeHierarchySection(spec, specInfo, context);
-  
-  // Generate metadata section
-  const metadataSection = generateMetadataSection(metadata);
+  // Generate meta-type notice if applicable
+  const metaTypeNotice = generateMetaTypeNotice(specInfo);
   
   // Generate schema section
   const schemaSection = generateSchemaSection(schema);
@@ -65,9 +62,7 @@ ${header}
 
 ${versionNav}
 
-${typeHierarchySection}
-
-${metadataSection}
+${metaTypeNotice}
 
 ${schemaSection}
 
@@ -173,136 +168,18 @@ function generateVersionNavigation(specInfo, allVersions) {
   return nav;
 }
 
-function generateTypeHierarchySection(spec, specInfo, context = {}) {
-  let section = '## Type Information\n\n';
-  
-  // Special case for the meta-type
+function generateMetaTypeNotice(specInfo) {
+  // Special notice for the meta-type
   if (specInfo.specName === 'type') {
-    section += ':::info Meta-Type\n';
-    section += 'This is the foundational meta-type from which all other Canon Protocol types derive. ';
-    section += 'It defines the structure and validation rules for creating new types.\n';
-    section += ':::\n\n';
-  } else if (spec.type) {
-    section += '### Type Hierarchy\n\n';
-    
-    // Build the hierarchy chain
-    const hierarchy = [];
-    let currentType = spec.type;
-    
-    // Parse the type chain (limited depth to prevent infinite loops)
-    let depth = 0;
-    const visitedTypes = new Set();
-    const typeChain = [];
-    
-    while (currentType && depth < 5) {
-      // Check if this is the meta-type referencing itself
-      if (currentType.includes('canon-protocol.org/type@')) {
-        typeChain.push(formatTypeReference(currentType, true));
-        // Stop here - the meta-type is the root of the hierarchy
-        break;
-      }
-      
-      // Check for cycles
-      if (visitedTypes.has(currentType)) {
-        typeChain.push(`${formatTypeReference(currentType)} (circular reference)`);
-        break;
-      }
-      visitedTypes.add(currentType);
-      
-      typeChain.push(formatTypeReference(currentType, true));
-      
-      // Try to find the parent type in our context
-      const typeMatch = currentType.match(/([^/]+)\/([^@]+)@(.+)/);
-      if (typeMatch && context.typeHierarchy) {
-        const [, , typeName, ] = typeMatch;
-        // Look for the parent type's parent
-        const parentKey = Object.keys(context.typeHierarchy).find(key => key.startsWith(`${typeName}@`));
-        if (parentKey) {
-          const parentType = context.typeHierarchy[parentKey];
-          if (parentType && parentType !== currentType) {
-            currentType = parentType;
-          } else {
-            break;
-          }
-        } else {
-          break;
-        }
-      } else {
-        break;
-      }
-      depth++;
-    }
-    
-    // Display the hierarchy using a code block for proper formatting
-    section += '```\n';
-    section += `${specInfo.specName}@${specInfo.version} (this specification)\n`;
-    
-    // Add the parent types with tree characters
-    for (let i = 0; i < typeChain.length; i++) {
-      const isLast = i === typeChain.length - 1;
-      const prefix = isLast ? '└─ ' : '├─ ';
-      // Extract just the type URI without markdown
-      const typeUri = typeChain[i].match(/`([^`]+)`/)?.[1] || typeChain[i];
-      section += `${prefix}${typeUri}\n`;
-    }
-    section += '```\n\n';
+    let notice = ':::info Meta-Type\n';
+    notice += 'This is the foundational meta-type from which all other Canon Protocol types derive. ';
+    notice += 'It defines the structure and validation rules for creating new types.\n';
+    notice += ':::\n\n';
+    return notice;
   }
-  
-  // Show what this type includes/composes
-  if (spec.includes && spec.includes.length > 0) {
-    section += '### Composes\n\n';
-    section += 'This type composes the following types:\n\n';
-    for (const included of spec.includes) {
-      section += `- ${formatTypeReference(included, true)}\n`;
-    }
-    section += '\n';
-  }
-  
-  return section;
+  return '';
 }
 
-function generateMetadataSection(metadata) {
-  if (!metadata) return '';
-  
-  let section = '## Metadata\n\n';
-  
-  const fields = [
-    { key: 'id', label: 'Identifier' },
-    { key: 'publisher', label: 'Publisher' },
-    { key: 'title', label: 'Title' },
-    { key: 'description', label: 'Description' },
-    { key: 'version', label: 'Version' },
-    { key: 'license', label: 'License' },
-    { key: 'homepage', label: 'Homepage' },
-    { key: 'repository', label: 'Repository' }
-  ];
-  
-  const hasContent = fields.some(f => metadata[f.key]);
-  if (!hasContent) return '';
-  
-  section += '| Field | Value |\n';
-  section += '|-------|-------|\n';
-  
-  for (const field of fields) {
-    if (metadata[field.key]) {
-      let value = metadata[field.key];
-      
-      // Format URLs as links
-      if (typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://'))) {
-        value = `[${value}](${value})`;
-      }
-      
-      // Format arrays
-      if (Array.isArray(value)) {
-        value = value.join(', ');
-      }
-      
-      section += `| **${field.label}** | ${value} |\n`;
-    }
-  }
-  
-  return section;
-}
 
 function generateSchemaSection(schema) {
   if (!schema) return '';
