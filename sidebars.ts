@@ -15,8 +15,23 @@ const sidebars: SidebarsConfig = {
     },
     {
         type: 'doc',
-        id: 'type/0.1.0',
+        id: 'type/0.2.0',
         label: 'Type Definition'
+    },
+    {
+        type: 'doc',
+        id: 'artifact-manifest/0.1.0',
+        label: 'Artifact Manifest'
+    },
+    {
+        type: 'doc',
+        id: 'version-operators-explained/0.1.0',
+        label: 'Version Operators Explained'
+    },
+    {
+        type: 'doc',
+        id: 'blog-post/0.1.0',
+        label: 'Blog Post'
     },
     {
         type: 'doc',

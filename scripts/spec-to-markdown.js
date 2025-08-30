@@ -49,8 +49,14 @@ ${metadata?.description || ''}
   // Generate spec content section (based on type schema)
   const specContentSection = generateSpecContentSection(spec, specInfo, context);
   
+  // Check if this is a blog post and has primary content
+  let primaryContentSection = '';
+  if (spec.type && spec.type.includes('/blog-post@') && spec.artifacts) {
+    primaryContentSection = generatePrimaryContentSection(spec, sourceFiles);
+  }
+  
   // Generate source files section
-  const sourceFilesSection = generateSourceFilesSection(sourceFiles, specInfo);
+  const sourceFilesSection = generateSourceFilesSection(sourceFiles, specInfo, spec);
   
   // Combine all sections
   return `${frontmatter}
@@ -58,6 +64,8 @@ ${metadata?.description || ''}
 ${header}
 
 ${versionNav}
+
+${primaryContentSection}
 
 ${schemaSection}
 
@@ -647,19 +655,50 @@ function formatStringValue(value, schema) {
   return `${value}\n\n`;
 }
 
-function generateSourceFilesSection(sourceFiles, specInfo) {
+function generateSourceFilesSection(sourceFiles, specInfo, spec = {}) {
   if (!sourceFiles || Object.keys(sourceFiles).length === 0) {
     return '';
   }
   
   let section = '## Source Files\n\n';
   
-  // Sort files with canon.yml first, then alphabetically
-  const fileNames = Object.keys(sourceFiles).sort((a, b) => {
-    if (a === 'canon.yml') return -1;
-    if (b === 'canon.yml') return 1;
-    return a.localeCompare(b);
-  });
+  // Organize files based on artifacts declaration
+  const artifacts = spec.artifacts || {};
+  const primaryArtifacts = [];
+  const declaredArtifacts = [];
+  const undeclaredFiles = [];
+  
+  // Categorize files
+  for (const fileName of Object.keys(sourceFiles)) {
+    // canon.yml is always special
+    if (fileName === 'canon.yml' || fileName === 'canon.yaml') {
+      continue; // Will be added first regardless
+    }
+    
+    // Check if this file is declared as an artifact
+    let isDeclared = false;
+    for (const [artifactId, artifactInfo] of Object.entries(artifacts)) {
+      if (artifactInfo.path === fileName) {
+        if (artifactInfo.primary) {
+          primaryArtifacts.push({ fileName, artifactId, info: artifactInfo });
+        } else {
+          declaredArtifacts.push({ fileName, artifactId, info: artifactInfo });
+        }
+        isDeclared = true;
+        break;
+      }
+    }
+    
+    if (!isDeclared) {
+      undeclaredFiles.push(fileName);
+    }
+  }
+  
+  // Build final file list: canon.yml, primary artifacts, declared artifacts, then others
+  const fileNames = ['canon.yml', 'canon.yaml'].filter(f => sourceFiles[f]);
+  primaryArtifacts.forEach(a => fileNames.push(a.fileName));
+  declaredArtifacts.forEach(a => fileNames.push(a.fileName));
+  undeclaredFiles.sort().forEach(f => fileNames.push(f));
   
   // Build the base URL for source files
   const sourceBaseUrl = `https://github.com/canon-protocol/canon/tree/main/${specInfo.publisher}/${specInfo.specName}/${specInfo.version}`;
@@ -680,13 +719,34 @@ function generateSourceFilesSection(sourceFiles, specInfo) {
     let content = sourceFiles[fileName];
     if (!content) continue;
     
+    // Find artifact info if this file is declared
+    let artifactInfo = null;
+    let isPrimary = false;
+    for (const artifact of [...primaryArtifacts, ...declaredArtifacts]) {
+      if (artifact.fileName === fileName) {
+        artifactInfo = artifact.info;
+        isPrimary = primaryArtifacts.some(a => a.fileName === fileName);
+        break;
+      }
+    }
+    
     // Determine the language for syntax highlighting
     let language = 'yaml';
-    if (fileName.endsWith('.json')) language = 'json';
-    else if (fileName.endsWith('.md')) language = 'markdown';
-    else if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) language = 'yaml';
-    else if (fileName.endsWith('.js')) language = 'javascript';
-    else if (fileName.endsWith('.ts')) language = 'typescript';
+    if (artifactInfo && artifactInfo.type) {
+      // Use declared type if available
+      if (artifactInfo.type.includes('markdown')) language = 'markdown';
+      else if (artifactInfo.type.includes('json')) language = 'json';
+      else if (artifactInfo.type.includes('yaml')) language = 'yaml';
+      else if (artifactInfo.type.includes('javascript')) language = 'javascript';
+      else if (artifactInfo.type.includes('typescript')) language = 'typescript';
+    } else {
+      // Fall back to extension-based detection
+      if (fileName.endsWith('.json')) language = 'json';
+      else if (fileName.endsWith('.md')) language = 'markdown';
+      else if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) language = 'yaml';
+      else if (fileName.endsWith('.js')) language = 'javascript';
+      else if (fileName.endsWith('.ts')) language = 'typescript';
+    }
     
     // Ensure content is properly formatted
     content = content.trim();
@@ -695,8 +755,19 @@ function generateSourceFilesSection(sourceFiles, specInfo) {
     // Create a safe value for the tab (remove special characters)
     const tabValue = fileName.replace(/[^a-zA-Z0-9-]/g, '-');
     
+    // Build label with primary indicator
+    let tabLabel = fileName;
+    if (isPrimary) {
+      tabLabel = `⭐ ${fileName}`;
+    }
+    
     // Start tab item
-    section += `  <TabItem value="${tabValue}" label="${fileName}">\n\n`;
+    section += `  <TabItem value="${tabValue}" label="${tabLabel}">\n\n`;
+    
+    // Add artifact description if available
+    if (artifactInfo && artifactInfo.description) {
+      section += `> ${artifactInfo.description}\n\n`;
+    }
     
     // Add links to view the file
     section += `[View on GitHub](${sourceBaseUrl}/${fileName}) | `;
@@ -735,6 +806,52 @@ function generateSourceFilesSection(sourceFiles, specInfo) {
   section += '</Tabs>\n\n';
   
   return section;
+}
+
+function generatePrimaryContentSection(spec, sourceFiles) {
+  // Find primary artifact
+  let primaryArtifact = null;
+  for (const [artifactId, artifactInfo] of Object.entries(spec.artifacts || {})) {
+    if (artifactInfo.primary && artifactInfo.path) {
+      primaryArtifact = artifactInfo;
+      break;
+    }
+  }
+  
+  if (!primaryArtifact || !sourceFiles[primaryArtifact.path]) {
+    return '';
+  }
+  
+  const content = sourceFiles[primaryArtifact.path];
+  
+  // For markdown content, render it directly
+  if (primaryArtifact.type && primaryArtifact.type.includes('markdown')) {
+    let section = '## Content\n\n';
+    
+    // Add metadata if this is a blog post
+    if (spec.type && spec.type.includes('/blog-post@')) {
+      if (spec.author || spec.date) {
+        section += ':::info Article Info\n';
+        if (spec.author) section += `**Author:** ${spec.author}  \n`;
+        if (spec.date) section += `**Date:** ${spec.date}  \n`;
+        if (spec.tags && Array.isArray(spec.tags)) {
+          section += `**Tags:** ${spec.tags.map(t => `\`${t}\``).join(', ')}  \n`;
+        }
+        section += ':::\n\n';
+      }
+      
+      if (spec.summary) {
+        section += `> ${spec.summary}\n\n`;
+      }
+    }
+    
+    // Add the markdown content directly (it will be rendered by Docusaurus)
+    section += content + '\n\n';
+    
+    return section;
+  }
+  
+  return '';
 }
 
 function generateExamplesSection(spec) {
