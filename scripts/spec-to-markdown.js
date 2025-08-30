@@ -49,9 +49,9 @@ ${metadata?.description || ''}
   // Generate spec content section (based on type schema)
   const specContentSection = generateSpecContentSection(spec, specInfo, context);
   
-  // Check if this is a blog post and has primary content
+  // Check if spec has primary content artifact
   let primaryContentSection = '';
-  if (spec.type && spec.type.includes('/blog-post@') && spec.artifacts) {
+  if (spec.artifacts) {
     primaryContentSection = generatePrimaryContentSection(spec, sourceFiles);
   }
   
