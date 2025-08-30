@@ -1,6 +1,6 @@
 function generateMarkdown(spec, specInfo, context = {}) {
   const { metadata, schema, includes } = spec;
-  const { allVersions = [], typeHierarchy = {}, sourceFiles = {} } = context;
+  const { allVersions = [], typeHierarchy = {}, sourceFiles = {}, typeSchemas = {}, allSpecs = {} } = context;
   
   // Determine if this is the latest version using semantic versioning
   const sortedVersions = [...allVersions].sort((a, b) => {
@@ -52,6 +52,9 @@ ${metadata?.description || ''}
   // Generate examples section
   const examplesSection = generateExamplesSection(spec);
   
+  // Generate spec content section (based on type schema)
+  const specContentSection = generateSpecContentSection(spec, specInfo, context);
+  
   // Generate source files section
   const sourceFilesSection = generateSourceFilesSection(sourceFiles, specInfo);
   
@@ -67,6 +70,8 @@ ${typeHierarchySection}
 ${metadataSection}
 
 ${schemaSection}
+
+${specContentSection}
 
 ${examplesSection}
 
@@ -428,6 +433,243 @@ function generateSchemaDescription(schema) {
   }
   
   return description;
+}
+
+function generateSpecContentSection(spec, specInfo, context) {
+  const { typeSchemas = {} } = context;
+  
+  // Skip if this is a type definition itself (they have schema sections)
+  if (spec.type && spec.type.includes('canon-protocol.org/type@')) {
+    return '';
+  }
+  
+  // Get the spec's type to look up its schema
+  if (!spec.type) {
+    return '';
+  }
+  
+  // Parse the type URI to get the schema
+  const typeMatch = spec.type.match(/([^@]+)@(.+)/);
+  if (!typeMatch) {
+    return '';
+  }
+  
+  const [, typeBase, typeVersion] = typeMatch;
+  const typeUri = `${typeBase}@${typeVersion}`;
+  const typeSchema = typeSchemas[typeUri];
+  
+  if (!typeSchema || !typeSchema.schema) {
+    return '';
+  }
+  
+  // Merge schemas from included types
+  let mergedSchema = { ...typeSchema.schema };
+  if (spec.includes && Array.isArray(spec.includes)) {
+    for (const includeUri of spec.includes) {
+      const includeMatch = includeUri.match(/([^@]+)@(.+)/);
+      if (includeMatch) {
+        const [, includeBase, includeVersion] = includeMatch;
+        const includeTypeUri = `${includeBase}@${includeVersion}`;
+        const includeSchema = typeSchemas[includeTypeUri];
+        if (includeSchema && includeSchema.schema) {
+          mergedSchema = { ...includeSchema.schema, ...mergedSchema };
+        }
+      }
+    }
+  }
+  
+  // Get all spec fields (excluding protocol fields)
+  const protocolFields = ['canon', 'type', 'metadata', 'includes', 'schema'];
+  const specFields = Object.keys(spec).filter(key => !protocolFields.includes(key) && !key.startsWith('_'));
+  
+  if (specFields.length === 0) {
+    return '';
+  }
+  
+  let section = '## Specification Content\n\n';
+  section += ':::info\n';
+  section += 'This section displays the specification fields as defined by its type schema.\n';
+  section += ':::\n\n';
+  
+  // Sort fields by schema definition order, then alphabetically
+  const schemaFieldOrder = Object.keys(mergedSchema);
+  specFields.sort((a, b) => {
+    const aIndex = schemaFieldOrder.indexOf(a);
+    const bIndex = schemaFieldOrder.indexOf(b);
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+    return a.localeCompare(b);
+  });
+  
+  // Generate field displays
+  for (const fieldName of specFields) {
+    const fieldValue = spec[fieldName];
+    const fieldSchema = mergedSchema[fieldName] || {};
+    
+    section += generateFieldDisplay(fieldName, fieldValue, fieldSchema);
+  }
+  
+  return section;
+}
+
+function generateFieldDisplay(fieldName, fieldValue, fieldSchema) {
+  let display = '';
+  
+  // Get field metadata from schema
+  const title = fieldSchema.title || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const description = fieldSchema.description || '';
+  const fieldType = fieldSchema.type || 'any';
+  const required = fieldSchema.required === true;
+  
+  // Start field display
+  display += `### ${title}\n\n`;
+  
+  // Add required/optional badge
+  if (required) {
+    display += '![Required](https://img.shields.io/badge/required-red) ';
+  } else {
+    display += '![Optional](https://img.shields.io/badge/optional-blue) ';
+  }
+  
+  // Add type badge
+  display += `![Type: ${fieldType}](https://img.shields.io/badge/type-${fieldType}-purple)\n\n`;
+  
+  // Format the value based on type
+  if (fieldValue === null || fieldValue === undefined) {
+    display += '*Not specified*\n\n';
+  } else if (fieldType === 'array' && Array.isArray(fieldValue)) {
+    display += formatArrayValue(fieldValue, fieldSchema);
+  } else if (fieldType === 'object' && typeof fieldValue === 'object') {
+    display += formatObjectValue(fieldValue, fieldSchema);
+  } else if (fieldType === 'string') {
+    display += formatStringValue(fieldValue, fieldSchema);
+  } else if (fieldType === 'number') {
+    display += `\`${fieldValue}\`\n\n`;
+  } else if (fieldType === 'boolean') {
+    display += `\`${fieldValue}\`\n\n`;
+  } else {
+    // Default formatting
+    display += `\`\`\`yaml\n${typeof fieldValue === 'object' ? JSON.stringify(fieldValue, null, 2) : fieldValue}\n\`\`\`\n\n`;
+  }
+  
+  // Add description if available
+  if (description) {
+    display += `> ${description}\n\n`;
+  }
+  
+  display += '---\n\n';
+  
+  return display;
+}
+
+function formatArrayValue(value, schema) {
+  let display = '';
+  const items = schema.items || {};
+  
+  if (value.length === 0) {
+    display += '*Empty list*\n\n';
+    return display;
+  }
+  
+  // Format based on item type
+  if (items.type === 'object' && items.properties) {
+    // Array of objects - format as table
+    display += '| ';
+    const props = Object.keys(items.properties);
+    display += props.map(p => items.properties[p].title || p).join(' | ');
+    display += ' |\n';
+    display += '|' + props.map(() => '---').join('|') + '|\n';
+    
+    for (const item of value) {
+      display += '| ';
+      display += props.map(p => {
+        const val = item[p];
+        if (val && typeof val === 'string' && val.startsWith('http')) {
+          return `[${val.replace(/https?:\/\//, '')}](${val})`;
+        }
+        return val || '-';
+      }).join(' | ');
+      display += ' |\n';
+    }
+    display += '\n';
+  } else {
+    // Simple array - format as list
+    for (const item of value) {
+      if (typeof item === 'string') {
+        // Check if it's a URI/reference
+        if (item.includes('@') && item.includes('/')) {
+          const parts = item.split('@');
+          display += `- \`${item}\`\n`;
+        } else {
+          display += `- ${item}\n`;
+        }
+      } else {
+        display += `- ${JSON.stringify(item)}\n`;
+      }
+    }
+    display += '\n';
+  }
+  
+  return display;
+}
+
+function formatObjectValue(value, schema) {
+  let display = '';
+  const properties = schema.properties || {};
+  
+  // Format as a definition list
+  for (const [key, val] of Object.entries(value)) {
+    const propSchema = properties[key] || {};
+    const propTitle = propSchema.title || key;
+    
+    display += `**${propTitle}**: `;
+    
+    if (typeof val === 'string') {
+      // Check if it's a URL
+      if (val.startsWith('http')) {
+        display += `[${val}](${val})`;
+      } 
+      // Check if it contains template variables that need escaping
+      else if (val.includes('{') || val.includes('}')) {
+        display += `\`${val}\``;
+      } 
+      // Default string
+      else {
+        display += `${val}`;
+      }
+    } else if (typeof val === 'object') {
+      display += `\n\`\`\`yaml\n${JSON.stringify(val, null, 2)}\n\`\`\``;
+    } else {
+      display += `${val}`;
+    }
+    display += '\n\n';
+  }
+  
+  return display;
+}
+
+function formatStringValue(value, schema) {
+  // Check if it's a URL
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return `[${value}](${value})\n\n`;
+  }
+  
+  // Check if it's a file path or contains template variables
+  if (value.endsWith('.md') || value.endsWith('.yml') || value.endsWith('.yaml') || 
+      value.includes('{') || value.includes('}')) {
+    return `\`${value}\`\n\n`;
+  }
+  
+  // Check if it's a multiline string
+  if (value.includes('\n')) {
+    return `\`\`\`\n${value}\n\`\`\`\n\n`;
+  }
+  
+  // Default string formatting
+  return `${value}\n\n`;
 }
 
 function generateSourceFilesSection(sourceFiles, specInfo) {

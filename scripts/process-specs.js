@@ -166,6 +166,7 @@ async function processSpecs() {
   const specIndex = [];
   const typeHierarchy = {};
   const derivedTypes = {};
+  const typeSchemas = {}; // Map of type URI to schema
   
   // First pass: collect all specs and their metadata
   const allSpecs = [];
@@ -192,6 +193,15 @@ async function processSpecs() {
           derivedTypes[spec.type] = [];
         }
         derivedTypes[spec.type].push(`${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`);
+      }
+      
+      // If this spec is a type definition (has schema), store its schema
+      if (spec.type && spec.type.includes('canon-protocol.org/type@') && spec.schema) {
+        const typeUri = `${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`;
+        typeSchemas[typeUri] = {
+          schema: spec.schema,
+          includes: spec.includes || []
+        };
       }
       
       console.log(`  📄 Found: ${specInfo.publisher}/${specInfo.specName}@${specInfo.version}`);
@@ -265,7 +275,9 @@ async function processSpecs() {
         allVersions,
         typeHierarchy,
         derivedTypes,
-        sourceFiles: specFiles
+        sourceFiles: specFiles,
+        typeSchemas,
+        allSpecs: specsByType
       });
       fs.writeFileSync(outputFile, markdown);
       
