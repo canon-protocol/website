@@ -274,9 +274,22 @@ function generateSchemaSection(schema) {
   
   let section = '## Schema\n\n';
   
-  if (schema.type === 'object' && schema.properties) {
+  // Check if schema has properties or direct field definitions
+  if (schema.properties) {
+    // Schema explicitly defines properties
     section += generatePropertiesTable(schema.properties, schema.required || []);
-  } else {
+  } else if (!schema.type && Object.keys(schema).some(key => 
+    key !== 'required' && key !== 'definitions' && key !== 'description')) {
+    // Schema has direct field definitions (Canon Protocol style)
+    // Filter out meta properties to get actual field definitions
+    const fieldKeys = Object.keys(schema).filter(key => 
+      key !== 'required' && key !== 'definitions' && key !== 'description'
+    );
+    if (fieldKeys.length > 0) {
+      section += generatePropertiesTable(schema, schema.required || []);
+    }
+  } else if (schema.type) {
+    // Simple type schema or object without properties
     section += generateSchemaDescription(schema);
   }
   
@@ -301,9 +314,22 @@ function generatePropertiesTable(properties, required = []) {
   table += '|----------|------|----------|-------------|\n';
   
   for (const [propName, propSchema] of Object.entries(properties)) {
-    const isRequired = required.includes(propName) ? '✅' : '❌';
+    // Skip non-schema properties
+    if (typeof propSchema !== 'object' || propSchema === null) continue;
+    
+    // Check if required (could be in array or as property field)
+    const isRequired = required.includes(propName) || propSchema.required === true ? '✅' : '❌';
     const type = formatType(propSchema);
-    const description = propSchema.description || '';
+    
+    // Use title if available, otherwise use the property name
+    const displayName = propSchema.title || propName;
+    
+    // Format description (handle multiline)
+    let description = propSchema.description || '';
+    if (description.includes('\n')) {
+      // For multiline descriptions, just take the first line for the table
+      description = description.split('\n')[0] + '...';
+    }
     
     table += `| \`${propName}\` | ${type} | ${isRequired} | ${description} |\n`;
   }
