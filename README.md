@@ -106,3 +106,11 @@ canon/                           # Separate repository (canon-protocol/canon)
 - **Documentation is generated at build time** - not committed to the repo
 - **GitHub Actions handles everything** - cloning specs, generating docs, deploying
 - **Local testing is possible** - but remember to clean up generated files
+
+## License
+
+This documentation website repository is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+**Important:** The Canon Protocol specifications that are fetched and displayed by this website maintain their own licenses as defined in their source repository. Each specification may declare its own license in its metadata. The licensing of the specifications is independent of this website's tooling license.
+
+This repository contains only the build tooling, scripts, and configuration needed to generate and serve the documentation. The actual specification content and its licensing are defined in the [canon-protocol/canon](https://github.com/canon-protocol/canon) repository.
