@@ -65,12 +65,6 @@ const config: Config = {
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'specSidebar',
-          position: 'left',
-          label: 'Specifications',
-        },
-        {
           href: 'https://github.com/canon-protocol',
           label: 'GitHub',
           position: 'right',
