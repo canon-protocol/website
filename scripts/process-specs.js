@@ -292,6 +292,9 @@ async function processSpecs() {
   // Generate index page
   generateIndexPage(specIndex, specsByType);
   
+  // Generate dynamic sidebars configuration
+  generateSidebarsConfig(specsByType);
+  
   // Don't generate category files anymore - using direct links
   // generateCategoryFiles(specsByType);
   
@@ -554,6 +557,74 @@ Full semantic versioning support with compatibility tracking and dependency reso
 `;
   
   fs.writeFileSync(path.join(DOCS_OUTPUT_PATH, 'index.md'), markdown);
+}
+
+// Generate dynamic sidebars configuration
+function generateSidebarsConfig(specsByType) {
+  // Sort categories based on page_order of their latest version
+  const sortedSpecs = Object.entries(specsByType)
+    .map(([specName, specs]) => ({
+      specName,
+      latestSpec: specs[0],
+      latestVersion: specs[0]._info.version
+    }))
+    .sort((a, b) => {
+      // Check if specs have page_order field
+      const aHasOrder = typeof a.latestSpec.page_order === 'number';
+      const bHasOrder = typeof b.latestSpec.page_order === 'number';
+      
+      // Both have page_order: sort by page_order ascending
+      if (aHasOrder && bHasOrder) {
+        return a.latestSpec.page_order - b.latestSpec.page_order;
+      }
+      
+      // Only a has page_order: a comes first
+      if (aHasOrder && !bHasOrder) {
+        return -1;
+      }
+      
+      // Only b has page_order: b comes first
+      if (!aHasOrder && bHasOrder) {
+        return 1;
+      }
+      
+      // Neither has page_order: sort alphabetically
+      return a.specName.localeCompare(b.specName);
+    });
+
+  // Build the sidebar items
+  const sidebarItems = [
+    {
+      type: 'doc',
+      id: 'index',
+      label: 'Overview',
+    }
+  ];
+
+  // Add all specs in sorted order
+  for (const { specName, latestSpec, latestVersion } of sortedSpecs) {
+    sidebarItems.push({
+      type: 'doc',
+      id: `${specName}/${latestVersion}`,
+      label: latestSpec.metadata?.title || specName,
+    });
+  }
+
+  // Generate the TypeScript sidebars file
+  const sidebarContent = `import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+
+const sidebars: SidebarsConfig = {
+  // Main specification sidebar - dynamically generated based on page_order
+  specSidebar: ${JSON.stringify(sidebarItems, null, 4).replace(/"([^"]+)":/g, '$1:').replace(/"/g, "'")},
+};
+
+export default sidebars;
+`;
+
+  // Write the sidebars configuration
+  const sidebarPath = path.join(process.cwd(), 'sidebars.ts');
+  fs.writeFileSync(sidebarPath, sidebarContent);
+  console.log('📚 Generated dynamic sidebars configuration');
 }
 
 // Generate category files for sidebar organization
