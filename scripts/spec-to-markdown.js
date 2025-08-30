@@ -342,7 +342,9 @@ function formatType(schema) {
     let type = schema.type;
     
     if (schema.type === 'array' && schema.items) {
-      type = `array<${formatType(schema.items)}>`;
+      // Use brackets instead of angle brackets to avoid MDX interpreting as JSX
+      const itemType = formatType(schema.items);
+      type = `array[${itemType}]`;
     }
     
     if (schema.enum) {
