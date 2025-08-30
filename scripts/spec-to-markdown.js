@@ -452,6 +452,13 @@ function generateSourceFilesSection(sourceFiles, specInfo) {
   section += 'These are the source files from the Canon Protocol registry for this specification.\n';
   section += ':::\n\n';
   
+  // Import tabs components at the top of the section
+  section += 'import Tabs from \'@theme/Tabs\';\n';
+  section += 'import TabItem from \'@theme/TabItem\';\n\n';
+  
+  // Start tabs container
+  section += '<Tabs>\n';
+  
   for (const fileName of fileNames) {
     let content = sourceFiles[fileName];
     if (!content) continue;
@@ -468,22 +475,27 @@ function generateSourceFilesSection(sourceFiles, specInfo) {
     content = content.trim();
     const lines = content.split('\n').length;
     
-    // Add file header with links
-    section += `### ${fileName}\n\n`;
+    // Create a safe value for the tab (remove special characters)
+    const tabValue = fileName.replace(/[^a-zA-Z0-9-]/g, '-');
+    
+    // Start tab item
+    section += `  <TabItem value="${tabValue}" label="${fileName}">\n\n`;
+    
+    // Add links to view the file
     section += `[View on GitHub](${sourceBaseUrl}/${fileName}) | `;
     section += `[View Raw](${rawBaseUrl}/${fileName})\n\n`;
     
-    // For very large files (>200 lines), just show a link
+    // For very large files (>200 lines), show a truncated view
     if (lines > 200) {
       section += `:::note\n`;
-      section += `This file contains ${lines} lines. View the full content using the links above.\n`;
+      section += `This file contains ${lines} lines. Showing first 50 lines as preview.\n`;
       section += `:::\n\n`;
       
       // Show first 50 lines as preview
       const preview = content.split('\n').slice(0, 50).join('\n');
-      const fence = preview.includes('```') ? '````' : '```';
+      const hasTripleBackticks = preview.includes('```');
+      const fence = hasTripleBackticks ? '````' : '```';
       
-      section += `**Preview (first 50 lines):**\n\n`;
       section += `${fence}${language}\n`;
       section += preview;
       section += `\n...\n`;
@@ -497,7 +509,13 @@ function generateSourceFilesSection(sourceFiles, specInfo) {
       section += content;
       section += `\n${fence}\n\n`;
     }
+    
+    // End tab item
+    section += '  </TabItem>\n';
   }
+  
+  // End tabs container
+  section += '</Tabs>\n\n';
   
   return section;
 }
