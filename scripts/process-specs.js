@@ -486,14 +486,38 @@ Full semantic versioning support with compatibility tracking and dependency reso
 
 // Generate dynamic sidebars configuration
 function generateSidebarsConfig(specsByType) {
-  // Sort categories based on page_order of their latest version
-  const sortedSpecs = Object.entries(specsByType)
+  // Create spec entries and filter out hidden specs
+  const allSpecs = Object.entries(specsByType)
     .map(([specName, specs]) => ({
       specName,
       latestSpec: specs[0],
       latestVersion: specs[0]._info.version
     }))
-    .sort((a, b) => {
+    .filter(({ latestSpec }) => {
+      // Filter out specs with hide_from_nav: true
+      return !latestSpec.hide_from_nav;
+    });
+
+  // Discover all unique categories dynamically
+  const categoriesMap = new Map();
+  const uncategorizedSpecs = [];
+
+  for (const spec of allSpecs) {
+    const category = spec.latestSpec.page_category;
+    
+    if (category) {
+      if (!categoriesMap.has(category)) {
+        categoriesMap.set(category, []);
+      }
+      categoriesMap.get(category).push(spec);
+    } else {
+      uncategorizedSpecs.push(spec);
+    }
+  }
+
+  // Sort specs within each category by page_order, then alphabetically
+  const sortSpecsInCategory = (specs) => {
+    return specs.sort((a, b) => {
       // Check if specs have page_order field
       const aHasOrder = typeof a.latestSpec.page_order === 'number';
       const bHasOrder = typeof b.latestSpec.page_order === 'number';
@@ -516,6 +540,15 @@ function generateSidebarsConfig(specsByType) {
       // Neither has page_order: sort alphabetically
       return a.specName.localeCompare(b.specName);
     });
+  };
+
+  // Sort specs in each category
+  for (const [category, specs] of categoriesMap.entries()) {
+    categoriesMap.set(category, sortSpecsInCategory(specs));
+  }
+  
+  // Sort uncategorized specs
+  sortSpecsInCategory(uncategorizedSpecs);
 
   // Build the sidebar items
   const sidebarItems = [
@@ -526,12 +559,41 @@ function generateSidebarsConfig(specsByType) {
     }
   ];
 
-  // Add all specs in sorted order
-  for (const { specName, latestSpec, latestVersion } of sortedSpecs) {
-    sidebarItems.push({
+  // Sort categories alphabetically
+  const sortedCategories = Array.from(categoriesMap.keys()).sort();
+
+  // Add categorized sections
+  for (const category of sortedCategories) {
+    const specs = categoriesMap.get(category);
+    const categoryItems = specs.map(({ specName, latestSpec, latestVersion }) => ({
       type: 'doc',
       id: `${specName}/${latestVersion}`,
       label: latestSpec.metadata?.title || specName,
+    }));
+
+    sidebarItems.push({
+      type: 'category',
+      label: category,
+      collapsible: true,
+      collapsed: false,
+      items: categoryItems,
+    });
+  }
+
+  // Add uncategorized specs if any exist
+  if (uncategorizedSpecs.length > 0) {
+    const uncategorizedItems = uncategorizedSpecs.map(({ specName, latestSpec, latestVersion }) => ({
+      type: 'doc',
+      id: `${specName}/${latestVersion}`,
+      label: latestSpec.metadata?.title || specName,
+    }));
+
+    sidebarItems.push({
+      type: 'category',
+      label: 'Other',
+      collapsible: true,
+      collapsed: false,
+      items: uncategorizedItems,
     });
   }
 
@@ -539,7 +601,7 @@ function generateSidebarsConfig(specsByType) {
   const sidebarContent = `import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
-  // Main specification sidebar - dynamically generated based on page_order
+  // Main specification sidebar - dynamically generated with categories
   specSidebar: ${JSON.stringify(sidebarItems, null, 4).replace(/"([^"]+)":/g, '$1:').replace(/"/g, "'")},
 };
 
@@ -549,7 +611,7 @@ export default sidebars;
   // Write the sidebars configuration
   const sidebarPath = path.join(process.cwd(), 'sidebars.ts');
   fs.writeFileSync(sidebarPath, sidebarContent);
-  console.log('📚 Generated dynamic sidebars configuration');
+  console.log('📚 Generated dynamic sidebars configuration with categories');
 }
 
 // Generate category files for sidebar organization
