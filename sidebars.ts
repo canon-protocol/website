@@ -35,6 +35,11 @@ const sidebars: SidebarsConfig = {
     },
     {
         type: 'doc',
+        id: 'type-vs-includes-explained/0.1.0',
+        label: 'Type vs Includes: A Deep Dive'
+    },
+    {
+        type: 'doc',
         id: 'blog-post/0.1.0',
         label: 'Blog Post'
     },
