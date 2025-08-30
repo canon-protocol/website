@@ -252,14 +252,28 @@ table td {
   background-color: var(--ifm-color-emphasis-200);
 }
 
+/* Sidebar active item styling - Clean implementation */
 .menu__link--active {
-  background: var(--canon-gradient);
+  background-color: var(--canon-primary) !important;
   color: white !important;
   font-weight: 600;
 }
 
 .menu__link--active:hover {
-  background: var(--canon-gradient);
+  background-color: var(--canon-primary-dark) !important;
+  color: white !important;
+}
+
+/* Category items styling */
+.menu__list-item-collapsible > .menu__link--active,
+.menu__list-item-collapsible > .menu__link--active:hover {
+  background-color: var(--canon-primary) !important;
+  color: white !important;
+}
+
+/* Caret color for active categories */
+.menu__link--active .menu__caret,
+.menu__link--active::after {
   color: white !important;
 }
 

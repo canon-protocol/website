@@ -41,6 +41,7 @@ const config: Config = {
       'classic',
       {
         docs: {
+          routeBasePath: '/', // Serve docs at root level
           sidebarPath: './sidebars.ts',
           editUrl:
             'https://github.com/canon-protocol/website/tree/main/',
@@ -71,7 +72,7 @@ const config: Config = {
         },
         {
           type: 'doc',
-          docId: 'intro',
+          docId: 'getting-started',
           position: 'left',
           label: 'Getting Started',
         },
@@ -90,11 +91,11 @@ const config: Config = {
           items: [
             {
               label: 'Getting Started',
-              to: '/docs/intro',
+              to: '/getting-started',
             },
             {
               label: 'Specifications',
-              to: '/docs/specifications',
+              to: '/',
             },
           ],
         },

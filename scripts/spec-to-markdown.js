@@ -2,10 +2,15 @@ function generateMarkdown(spec, specInfo, context = {}) {
   const { metadata, schema, includes } = spec;
   const { allVersions = [], typeHierarchy = {}, sourceFiles = {} } = context;
   
-  // Determine if this is the latest version
+  // Determine if this is the latest version using semantic versioning
   const sortedVersions = [...allVersions].sort((a, b) => {
-    // Simple version comparison - enhance if needed
-    return b.localeCompare(a);
+    const parseVer = (v) => v.split('.').map(n => parseInt(n, 10));
+    const va = parseVer(a);
+    const vb = parseVer(b);
+    for (let i = 0; i < 3; i++) {
+      if (va[i] !== vb[i]) return vb[i] - va[i];
+    }
+    return 0;
   });
   const isLatest = sortedVersions[0] === specInfo.version;
   
@@ -13,7 +18,8 @@ function generateMarkdown(spec, specInfo, context = {}) {
   const frontmatter = `---
 id: ${specInfo.version}
 title: ${metadata?.title || specInfo.specName} v${specInfo.version}
-sidebar_label: v${specInfo.version}${isLatest ? ' (latest)' : ''}
+sidebar_label: ${metadata?.title || specInfo.specName}
+sidebar_position: ${isLatest ? 1 : 2}
 hide_table_of_contents: false
 custom_edit_url: null
 ---`;
@@ -104,8 +110,7 @@ function formatTypeReference(type, asLink = false) {
   
   if (asLink) {
     // Create a relative link to the specification
-    // We need to go up to the specifications root and then down to the specific spec
-    const link = `/docs/specifications/${typeName}/${version}`;
+    const link = `/${typeName}/${version}`;
     const label = isMetaType ? `${type} (meta-type)` : type;
     return `[\`${label}\`](${link})`;
   }
@@ -128,21 +133,37 @@ function formatIncludes(includes, asLink = false) {
 function generateVersionNavigation(specInfo, allVersions) {
   if (allVersions.length <= 1) return '';
   
-  let nav = '## Version Navigation\n\n';
-  nav += '<div class="version-nav">\n\n';
-  
-  // Sort versions
-  const sortedVersions = [...allVersions].sort((a, b) => b.localeCompare(a));
-  
-  nav += '**Available versions:** ';
-  nav += sortedVersions.map(v => {
-    if (v === specInfo.version) {
-      return `**${v}** (current)`;
+  // Sort versions (highest first)
+  const sortedVersions = [...allVersions].sort((a, b) => {
+    // Parse semantic versions properly
+    const parseVer = (v) => v.split('.').map(n => parseInt(n, 10));
+    const va = parseVer(a);
+    const vb = parseVer(b);
+    for (let i = 0; i < 3; i++) {
+      if (va[i] !== vb[i]) return vb[i] - va[i];
     }
-    return `[${v}](../${v})`;
-  }).join(' • ');
+    return 0;
+  });
   
-  nav += '\n\n</div>\n';
+  const isLatest = sortedVersions[0] === specInfo.version;
+  
+  // Only show version info if there are multiple versions
+  let nav = '';
+  
+  if (isLatest) {
+    // On the latest version, show other versions available
+    const otherVersions = sortedVersions.filter(v => v !== specInfo.version);
+    nav = ':::tip Version Information\n';
+    nav += `**Current:** v${specInfo.version} (latest)\n\n`;
+    nav += '**Other versions:** ';
+    nav += otherVersions.map(v => `[v${v}](/${specInfo.specName}/${v})`).join(', ');
+    nav += '\n:::\n\n';
+  } else {
+    // On older versions, show link to latest
+    nav = ':::warning Older Version\n';
+    nav += `This is an older version. View the [latest version (${sortedVersions[0]})](/${specInfo.specName}/${sortedVersions[0]})`;
+    nav += '\n:::\n\n';
+  }
   
   return nav;
 }

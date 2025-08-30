@@ -29,4 +29,11 @@ yarn-error.log*
 canon-specs/
 
 # Generated specification docs - created during build, never committed
-docs/specifications/
+# These are generated directly in docs/ folder with spec names
+docs/type/
+docs/canon-protocol/
+docs/canon-protocol-registry/
+docs/registry/
+docs/project/
+docs/protocol/
+docs/index.md

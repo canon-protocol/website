@@ -6,7 +6,7 @@ const { generateMarkdown } = require('./spec-to-markdown');
 
 const CANON_REPO_PATH = path.join(process.cwd(), 'canon-specs');
 const CANON_REPO_URL = 'https://github.com/canon-protocol/canon.git';
-const DOCS_OUTPUT_PATH = path.join(process.cwd(), 'docs', 'specifications');
+const DOCS_OUTPUT_PATH = path.join(process.cwd(), 'docs'); // Generate directly in docs folder
 
 // Semantic version comparison
 function compareVersions(a, b) {
@@ -210,7 +210,25 @@ async function processSpecs() {
     return aPriority - bPriority;
   });
   
-  // Process all specs
+  // First pass: group all specs by type
+  for (const spec of allSpecs) {
+    const specInfo = spec._info;
+    
+    // Group by spec name
+    if (!specsByType[specInfo.specName]) {
+      specsByType[specInfo.specName] = [];
+    }
+    specsByType[specInfo.specName].push(spec);
+  }
+  
+  // Sort versions for each spec type
+  for (const specName in specsByType) {
+    specsByType[specName].sort((a, b) => 
+      compareVersions(a._info.version, b._info.version)
+    );
+  }
+  
+  // Second pass: generate markdown files with complete version information
   for (const spec of allSpecs) {
     const specInfo = spec._info;
     
@@ -218,21 +236,16 @@ async function processSpecs() {
       // Get all files for this specification
       const specFiles = getSpecificationFiles(specInfo.fullPath, specInfo);
       
-      // Group by spec name
-      if (!specsByType[specInfo.specName]) {
-        specsByType[specInfo.specName] = [];
-      }
-      specsByType[specInfo.specName].push(spec);
-      
       // Generate output path
       const outputDir = path.join(DOCS_OUTPUT_PATH, specInfo.specName);
       ensureDirectoryExists(outputDir);
       
       const outputFile = path.join(outputDir, `${specInfo.version}.md`);
       
-      // Generate markdown with enhanced metadata and all source files
+      // Generate markdown with complete version list
+      const allVersions = specsByType[specInfo.specName].map(s => s._info.version);
       const markdown = generateMarkdown(spec, specInfo, {
-        allVersions: specsByType[specInfo.specName]?.map(s => s._info.version) || [specInfo.version],
+        allVersions,
         typeHierarchy,
         derivedTypes,
         sourceFiles: specFiles
@@ -257,23 +270,16 @@ async function processSpecs() {
     }
   }
   
-  // Sort versions for each spec type
-  for (const specName in specsByType) {
-    specsByType[specName].sort((a, b) => 
-      compareVersions(a._info.version, b._info.version)
-    );
-  }
-  
   console.log('\n📝 Generating documentation index...\n');
   
   // Generate index page
   generateIndexPage(specIndex, specsByType);
   
-  // Generate category files for each spec type
-  generateCategoryFiles(specsByType);
+  // Don't generate category files anymore - using direct links
+  // generateCategoryFiles(specsByType);
   
-  // Generate version redirects for latest versions
-  generateVersionRedirects(specsByType);
+  // Don't generate version redirects - they clutter the sidebar
+  // generateVersionRedirects(specsByType);
   
   // Print summary
   console.log('📈 Summary:');

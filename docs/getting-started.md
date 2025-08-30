@@ -1,6 +1,6 @@
 ---
-id: intro
-title: Introduction
+id: getting-started
+title: Getting Started
 sidebar_position: 1
 ---
 
@@ -109,6 +109,6 @@ Full semantic versioning support with compatibility tracking and dependency reso
 
 ## Next Steps
 
-- [Specifications Reference](specifications/) - Explore available specifications
+- [Specifications Reference](/) - Explore available specifications
 - [Canon CLI](https://github.com/canon-protocol/canon-cli) - Command-line tools
 - [Canon Registry](https://github.com/canon-protocol/canon) - Official specification registry
