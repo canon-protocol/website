@@ -30,6 +30,11 @@ const sidebars: SidebarsConfig = {
     },
     {
         type: 'doc',
+        id: 'composition-conflicts-explained/0.1.0',
+        label: 'Type Composition and Field Conflicts'
+    },
+    {
+        type: 'doc',
         id: 'blog-post/0.1.0',
         label: 'Blog Post'
     },

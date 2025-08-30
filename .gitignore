@@ -28,12 +28,20 @@ yarn-error.log*
 # Canon specs - downloaded temporarily during build, never committed
 canon-specs/
 
-# Generated specification docs - created during build, never committed
-# These are generated directly in docs/ folder with spec names
-docs/type/
-docs/canon-protocol/
-docs/canon-protocol-registry/
-docs/registry/
-docs/project/
-docs/protocol/
-docs/index.md
+# Documentation - ignore all by default (most are generated)
+docs/*
+
+# But keep these static files and directories
+!docs/.gitignore
+!docs/index.md
+!docs/getting-started/
+!docs/guides/
+!docs/reference/
+!docs/specifications/
+
+# Keep the directories themselves but not their contents (yet)
+# These are placeholders for potential future static content
+docs/getting-started/*
+docs/guides/*
+docs/reference/*
+docs/specifications/*

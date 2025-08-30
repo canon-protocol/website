@@ -664,146 +664,71 @@ function generateSourceFilesSection(sourceFiles, specInfo, spec = {}) {
   
   // Organize files based on artifacts declaration
   const artifacts = spec.artifacts || {};
-  const primaryArtifacts = [];
-  const declaredArtifacts = [];
-  const undeclaredFiles = [];
+  const filesWithInfo = [];
   
-  // Categorize files
+  // Process all files
   for (const fileName of Object.keys(sourceFiles)) {
-    // canon.yml is always special
-    if (fileName === 'canon.yml' || fileName === 'canon.yaml') {
-      continue; // Will be added first regardless
-    }
+    let fileInfo = {
+      name: fileName,
+      description: null,
+      isPrimary: false
+    };
     
     // Check if this file is declared as an artifact
-    let isDeclared = false;
     for (const [artifactId, artifactInfo] of Object.entries(artifacts)) {
       if (artifactInfo.path === fileName) {
-        if (artifactInfo.primary) {
-          primaryArtifacts.push({ fileName, artifactId, info: artifactInfo });
-        } else {
-          declaredArtifacts.push({ fileName, artifactId, info: artifactInfo });
-        }
-        isDeclared = true;
+        fileInfo.description = artifactInfo.description;
+        fileInfo.isPrimary = artifactInfo.primary || false;
         break;
       }
     }
     
-    if (!isDeclared) {
-      undeclaredFiles.push(fileName);
+    // Special description for canon.yml if not provided
+    if ((fileName === 'canon.yml' || fileName === 'canon.yaml') && !fileInfo.description) {
+      fileInfo.description = 'Specification definition';
     }
+    
+    filesWithInfo.push(fileInfo);
   }
   
-  // Build final file list: canon.yml, primary artifacts, declared artifacts, then others
-  const fileNames = ['canon.yml', 'canon.yaml'].filter(f => sourceFiles[f]);
-  primaryArtifacts.forEach(a => fileNames.push(a.fileName));
-  declaredArtifacts.forEach(a => fileNames.push(a.fileName));
-  undeclaredFiles.sort().forEach(f => fileNames.push(f));
+  // Sort files: canon.yml first, then primary artifacts, then others
+  filesWithInfo.sort((a, b) => {
+    // canon.yml always first
+    if (a.name === 'canon.yml' || a.name === 'canon.yaml') return -1;
+    if (b.name === 'canon.yml' || b.name === 'canon.yaml') return 1;
+    
+    // Primary artifacts next
+    if (a.isPrimary && !b.isPrimary) return -1;
+    if (!a.isPrimary && b.isPrimary) return 1;
+    
+    // Then alphabetically
+    return a.name.localeCompare(b.name);
+  });
   
-  // Build the base URL for source files
+  // Build the base URLs for source files
   const sourceBaseUrl = `https://github.com/canon-protocol/canon/tree/main/${specInfo.publisher}/${specInfo.specName}/${specInfo.version}`;
   const rawBaseUrl = `https://raw.githubusercontent.com/canon-protocol/canon/main/${specInfo.publisher}/${specInfo.specName}/${specInfo.version}`;
   
-  section += ':::info\n';
-  section += 'These are the source files from the Canon Protocol registry for this specification.\n';
-  section += ':::\n\n';
+  section += '| File | Description | Links |\n';
+  section += '|------|-------------|-------|\n';
   
-  // Import tabs components at the top of the section
-  section += 'import Tabs from \'@theme/Tabs\';\n';
-  section += 'import TabItem from \'@theme/TabItem\';\n\n';
-  
-  // Start tabs container
-  section += '<Tabs>\n';
-  
-  for (const fileName of fileNames) {
-    let content = sourceFiles[fileName];
-    if (!content) continue;
+  // Generate table rows for each file
+  for (const fileInfo of filesWithInfo) {
+    // File name with primary indicator
+    let fileName = fileInfo.isPrimary ? `⭐ ${fileInfo.name}` : fileInfo.name;
     
-    // Find artifact info if this file is declared
-    let artifactInfo = null;
-    let isPrimary = false;
-    for (const artifact of [...primaryArtifacts, ...declaredArtifacts]) {
-      if (artifact.fileName === fileName) {
-        artifactInfo = artifact.info;
-        isPrimary = primaryArtifacts.some(a => a.fileName === fileName);
-        break;
-      }
-    }
+    // Description or dash if none
+    const description = fileInfo.description || '-';
     
-    // Determine the language for syntax highlighting
-    let language = 'yaml';
-    if (artifactInfo && artifactInfo.type) {
-      // Use declared type if available
-      if (artifactInfo.type.includes('markdown')) language = 'markdown';
-      else if (artifactInfo.type.includes('json')) language = 'json';
-      else if (artifactInfo.type.includes('yaml')) language = 'yaml';
-      else if (artifactInfo.type.includes('javascript')) language = 'javascript';
-      else if (artifactInfo.type.includes('typescript')) language = 'typescript';
-    } else {
-      // Fall back to extension-based detection
-      if (fileName.endsWith('.json')) language = 'json';
-      else if (fileName.endsWith('.md')) language = 'markdown';
-      else if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) language = 'yaml';
-      else if (fileName.endsWith('.js')) language = 'javascript';
-      else if (fileName.endsWith('.ts')) language = 'typescript';
-    }
+    // Build links
+    const githubLink = `[GitHub](${sourceBaseUrl}/${fileInfo.name})`;
+    const rawLink = `[Raw](${rawBaseUrl}/${fileInfo.name})`;
+    const links = `${githubLink} • ${rawLink}`;
     
-    // Ensure content is properly formatted
-    content = content.trim();
-    const lines = content.split('\n').length;
-    
-    // Create a safe value for the tab (remove special characters)
-    const tabValue = fileName.replace(/[^a-zA-Z0-9-]/g, '-');
-    
-    // Build label with primary indicator
-    let tabLabel = fileName;
-    if (isPrimary) {
-      tabLabel = `⭐ ${fileName}`;
-    }
-    
-    // Start tab item
-    section += `  <TabItem value="${tabValue}" label="${tabLabel}">\n\n`;
-    
-    // Add artifact description if available
-    if (artifactInfo && artifactInfo.description) {
-      section += `> ${artifactInfo.description}\n\n`;
-    }
-    
-    // Add links to view the file
-    section += `[View on GitHub](${sourceBaseUrl}/${fileName}) | `;
-    section += `[View Raw](${rawBaseUrl}/${fileName})\n\n`;
-    
-    // For very large files (>200 lines), show a truncated view
-    if (lines > 200) {
-      section += `:::note\n`;
-      section += `This file contains ${lines} lines. Showing first 50 lines as preview.\n`;
-      section += `:::\n\n`;
-      
-      // Show first 50 lines as preview
-      const preview = content.split('\n').slice(0, 50).join('\n');
-      const hasTripleBackticks = preview.includes('```');
-      const fence = hasTripleBackticks ? '````' : '```';
-      
-      section += `${fence}${language}\n`;
-      section += preview;
-      section += `\n...\n`;
-      section += `${fence}\n\n`;
-    } else {
-      // For smaller files, show the full content
-      const hasTripleBackticks = content.includes('```');
-      const fence = hasTripleBackticks ? '````' : '```';
-      
-      section += `${fence}${language}\n`;
-      section += content;
-      section += `\n${fence}\n\n`;
-    }
-    
-    // End tab item
-    section += '  </TabItem>\n';
+    section += `| ${fileName} | ${description} | ${links} |\n`;
   }
   
-  // End tabs container
-  section += '</Tabs>\n\n';
+  section += '\n';
   
   return section;
 }
